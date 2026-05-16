@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+wheels/
+*.egg
+
+# Testing & coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+coverage/
+
+# Virtual environments
+.venv
+.venv*/
+venv/
+virtualenv/
+
+# IDE & editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment (contains secrets)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# AI tool workspace files
+.claude/
+.sisyphus/
+.cursorrules
+
+# Project specific
+*.backup
+NOTES.md
+notes.md
+todo.md
+TODO.md

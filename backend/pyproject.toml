@@ -1,0 +1,124 @@
+[project]
+name = "ai-pandit"
+version = "0.1.0"
+description = "Agentic Birth Time Rectification using multi-agent LangGraph debate"
+requires-python = ">=3.12"
+dependencies = [
+    # API
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.7.0",
+    "httpx>=0.28.0",
+    "tenacity>=9.0.0",
+
+    # Orchestration
+    "langgraph>=1.2.0",
+    "langchain-core>=0.3.0",
+    "langgraph-checkpoint-postgres>=2.0.0",
+
+    # LLM providers
+    "langchain-groq>=0.2.0",
+    "langchain-anthropic>=0.3.0",
+
+    # Database
+    "psycopg[binary]>=3.2.0",
+    "alembic>=1.14.0",
+    "sqlalchemy[asyncio]>=2.0.0",
+
+    # Redis (cache + queue)
+    "redis>=5.2.0",
+
+    # Google Cloud (job queue + archival)
+    "google-cloud-tasks>=2.0.0",
+    "google-cloud-storage>=3.0.0",
+
+    # Monitoring
+    "prometheus-client>=0.21.0",
+    "sentry-sdk>=2.0.0",
+
+    # Logging
+    "structlog>=25.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.9.0",
+    "mypy>=1.14.0",
+    "pre-commit>=4.0.0",
+    "types-redis>=4.0.0",
+]
+
+[tool.uv]
+package = false
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "C4", "T20", "RUF100"]
+ignore = ["E501"]  # Line length — formatter handles this
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["T20"]  # Allow print in tests
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+explicit_package_bases = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+disallow_any_expr = false
+disallow_any_decorated = false
+disallow_any_explicit = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+check_untyped_defs = true
+
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "integration: marks tests that require external services (DB, Redis, Ephemeris)",
+    "slow: marks tests that take more than 2 seconds",
+    "e2e: marks end-to-end pipeline tests",
+]
+filterwarnings = ["error"]
+
+addopts = "--tb=short --strict-markers"
+
+[tool.coverage.run]
+source = ["app"]
+omit = ["*/tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
