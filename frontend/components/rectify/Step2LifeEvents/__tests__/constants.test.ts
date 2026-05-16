@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DATE_OPTIONS, EVENT_PRESETS } from '../../components/rectify/Step2LifeEvents/constants';
+import { DATE_OPTIONS } from '../../components/rectify/Step2LifeEvents/constants';
 
 describe('Step2LifeEvents constants', () => {
   it('DATE_OPTIONS has entries', () => {

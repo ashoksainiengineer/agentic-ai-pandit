@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
 import DashboardPage from '@/app/dashboard/page';
 import React from 'react';
 
@@ -47,7 +47,7 @@ vi.mock('@/components/Layout', () => ({
 
 // Mock DashboardContent (the actual component rendered by the page)
 vi.mock('@/app/dashboard/DashboardContent', () => ({
-    DashboardContent: ({ externalId, userName }: any) => (
+    DashboardContent: ({ userName }: any) => (
         <div data-testid="dashboard-content">
             <h1>Welcome, {userName}</h1>
             <div data-testid="session-count">2</div>

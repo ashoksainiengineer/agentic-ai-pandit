@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+import structlog
 from pydantic import BaseModel, Field
 
 # ──────────────────────────────────────────────────────────────
@@ -172,7 +173,8 @@ def parse_structured_or_fallback(
         data = json.loads(text)
         return schema.model_validate(data)
     except (json.JSONDecodeError, ValueError):
-        pass
+        logger = structlog.get_logger()
+        logger.debug("json_parse_fallback_xml", schema=schema.__name__)
 
     # Fallback to XML parsing
     if schema is AgentVerdict:

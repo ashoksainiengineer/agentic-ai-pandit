@@ -110,6 +110,6 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             response.headers["X-RateLimit-Limit"] = str(max_requests)
             response.headers["X-RateLimit-Remaining"] = str(remaining)
         except Exception:
-            pass
+            log.warning("rate_limit_header_failed", exc_info=True)
 
         return response

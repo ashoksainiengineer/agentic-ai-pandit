@@ -16,7 +16,6 @@ import {
     validateMinute,
     validateDate,
     validateDateTime,
-    validateMonthYear,
     validateYearOnly,
     compareDates,
     validateDateRange,
@@ -28,7 +27,6 @@ import {
     buildDateString,
     buildTimeString,
     generateYears,
-    generateDays,
     isPrecisionSatisfied,
     DATE_CONSTANTS,
 } from '../date-utils.js';

@@ -342,7 +342,7 @@ class ToolRegistry:
                 self._log.debug("cache_hit", tool=name)
                 return spec.output_schema.model_validate_json(cached)
         except ToolCacheError:
-            pass  # fall through to execute
+            log.debug("cache_lookup_failed", tool=name)  # fall through to execute
 
         self._log.debug("cache_miss", tool=name)
 
