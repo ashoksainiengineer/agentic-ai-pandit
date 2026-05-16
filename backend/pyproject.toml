@@ -33,6 +33,7 @@ dependencies = [
     # Logging
     "structlog>=25.0.0",
     "jinja2>=3.1.6",
+    "sse-starlette>=3.4.4",
 ]
 
 [project.optional-dependencies]
@@ -58,7 +59,10 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM", "ARG", "C4", "T20", "RUF100"]
-ignore = ["E501"]  # Line length — formatter handles this
+ignore = [
+    "E501",  # Line length — formatter handles this
+    "B008",  # FastAPI Depends() in function arguments is the correct pattern
+]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["T20"]  # Allow print in tests
