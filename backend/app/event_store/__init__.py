@@ -72,7 +72,7 @@ class JobEventStore:
         # Publish to the SSE pub/sub channel
         await self._redis.publish(f"job:{job_id}:events", raw)
 
-        log.debug("event_written", job_id=job_id, event=event.event)
+        log.debug("event_written", job_id=job_id, event_type=event.event)
 
     async def write_error(self, job_id: str, message: str, **extra: Any) -> None:
         """Convenience — write an ``error`` event."""

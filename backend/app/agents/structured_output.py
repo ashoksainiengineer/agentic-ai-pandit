@@ -91,7 +91,7 @@ class AnchorEventSelection(BaseModel):
 # ──────────────────────────────────────────────────────────────
 
 AGENT_VERDICT_XML_RE = re.compile(
-    r"<AGENT_VERDICT>\s*"
+    r"\s*<AGENT_VERDICT>\s*"
     r"<candidate_id>(.+?)</candidate_id>\s*"
     r"<score>(.+?)</score>\s*"
     r"<reasoning>(.+?)</reasoning>\s*"
@@ -102,7 +102,7 @@ AGENT_VERDICT_XML_RE = re.compile(
 )
 
 CRITIC_VERDICT_XML_RE = re.compile(
-    r"<CRITIC_VERDICT>\s*"
+    r"\s*<CRITIC_VERDICT>\s*"
     r"<approved>(.+?)</approved>\s*"
     r"<summary>(.+?)</summary>\s*"
     r"(?:<re_evaluate_stage>(.+?)</re_evaluate_stage>)?\s*"
