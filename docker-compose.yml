@@ -56,6 +56,19 @@ services:
       redis:
         condition: service_healthy
 
+  web:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+      NEXT_PUBLIC_BACKEND_URL: http://app:8000
+    depends_on:
+      app:
+        condition: service_started
+
   migrate:
     build:
       context: ./backend
