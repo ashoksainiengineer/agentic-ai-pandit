@@ -1,10 +1,13 @@
 # AI-Pandit (Agentic): Autonomous BTR Engine
 
 [![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Under%20Development-yellow.svg)]()
 [![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)](https://python.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4+-3178c6.svg)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/Tests-238%20passing-brightgreen.svg)](backend/tests)
 [![Code Style: Ruff](https://img.shields.io/badge/Code%20Style-Ruff-0e7a3b.svg)](https://docs.astral.sh/ruff/)
+
+> **⚠️ UNDER DEVELOPMENT — APIs, architecture, and behavior may change without notice.**
 
 > **⚠️ PROPRIETARY SOFTWARE — ALL RIGHTS RESERVED**
 > This repository is publicly visible for transparency and portfolio purposes only.
