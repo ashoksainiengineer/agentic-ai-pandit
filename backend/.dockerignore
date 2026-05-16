@@ -1,0 +1,43 @@
+# Dependencies
+.venv/
+.venv*/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Build artifacts
+dist/
+build/
+wheels/
+
+# Testing & coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cov*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Git
+.git/
+.gitignore
+
+# AI tooling
+.sisyphus/
+.claude/
