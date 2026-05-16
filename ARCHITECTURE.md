@@ -1,5 +1,8 @@
 # Agentic AI-Pandit: End-to-End System Walkthrough
 
+> **⚠️ PROPRIETARY SOFTWARE — ALL RIGHTS RESERVED**
+> See [LICENSE](LICENSE) for full terms.
+
 ## Concrete Example
 
 **User submits:**

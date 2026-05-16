@@ -1,0 +1,82 @@
+# AI-Pandit (Agentic) Proprietary License
+
+Copyright (c) 2026 Ashok Saini. All rights reserved.
+
+## NOTICE
+
+This software and associated documentation files (the "Software") are proprietary
+and confidential information of Ashok Saini ("Owner").
+
+The Software incorporates and extends the Birth Time Rectification (BTR) engine
+originally developed in the ai-pandit-app repository. All original work is used
+under the terms of the original proprietary license. New contributions, adaptations,
+and the agentic pipeline (LangGraph-based multi-agent orchestration) are likewise
+proprietary.
+
+## RESTRICTIONS
+
+No permission is granted, by implication, estoppel, or otherwise, to any person
+or entity to:
+
+1. Use, copy, modify, merge, publish, distribute, sublicense, or sell copies
+   of the Software, in whole or in part.
+
+2. Create derivative works, reverse engineer, decompile, disassemble, or
+   otherwise attempt to derive the source code, algorithms, or structure of
+   the Software.
+
+3. Remove, alter, or obscure any copyright, trademark, or other proprietary
+   notices from the Software.
+
+4. Use the Software for any commercial purpose, including but not limited to
+   offering services based on the Software, without explicit prior written
+   permission from the Owner.
+
+5. Redistribute the Software in source or binary forms.
+
+## SOURCE AVAILABILITY
+
+This repository is publicly visible for the following limited purposes only:
+- Transparency and trust verification
+- Portfolio and demonstration purposes
+- Security auditing by authorized parties
+
+Public visibility does NOT constitute a grant of any license or permission to
+use, copy, modify, or distribute the Software.
+
+## INTELLECTUAL PROPERTY
+
+All patents, trademarks, trade secrets, copyrights, and other intellectual
+property rights in and to the Software are and shall remain the exclusive
+property of the Owner. No title to or ownership of the Software or any part
+thereof is transferred to any party.
+
+## COMMERCIAL LICENSING
+
+For commercial use, licensing, partnership, or integration inquiries, contact:
+📧 app.aipandit [at] gmail [dot] com
+
+## DISCLAIMER OF WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. IN NO EVENT
+SHALL THE OWNER BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE.
+
+## SEVERABILITY
+
+If any provision of this License is held to be unenforceable or invalid, such
+provision shall be changed and interpreted to accomplish the objectives of such
+provision to the greatest extent possible under applicable law, and the
+remaining provisions shall continue in full force and effect.
+
+## GOVERNING LAW
+
+This License shall be governed by and construed in accordance with the laws of
+India. Any disputes shall be subject to the exclusive jurisdiction of courts
+in Mumbai, Maharashtra, India.
+
+---
+
+**© 2026 Ashok Saini. All rights reserved. Proprietary and confidential.**
