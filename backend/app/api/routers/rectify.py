@@ -217,9 +217,11 @@ async def cancel_rectification(
     if job is None:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    from app.db.operations import update_session as db_update_job
+    from app.db.operations import request_job_cancellation
 
-    await db_update_job(db, job.id, status="cancelled")
+    cancelled_job = await request_job_cancellation(db, job.id)
+    if cancelled_job is None:
+        raise HTTPException(status_code=409, detail="Job already completed or cancelled")
 
     redis = await get_redis()
     await redis.publish(f"job:{job_id}:events", json.dumps({"event": "cancelled"}))
