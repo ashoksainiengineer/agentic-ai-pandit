@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.next/
+.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing & coverage
+coverage/
+.nyc_output/
+
+# Build artifacts
+dist/
+build/
+
+# Vercel
+.vercel

@@ -1,0 +1,38 @@
+{
+  "name": "AI Pandit - Birth Time Rectification",
+  "short_name": "AI Pandit",
+  "description": "Discover your precise birth time with divine accuracy through AI-powered Vedic astrology.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f8f8",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["lifestyle", "utilities", "spirituality"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Analysis",
+      "short_name": "Analyze",
+      "description": "Start a new birth time rectification analysis",
+      "url": "/rectify"
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your analysis history",
+      "url": "/dashboard"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}
