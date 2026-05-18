@@ -1,16 +1,19 @@
-FROM ghcr.io/astral-sh/uv:python3.12-bookworm AS builder
+FROM python:3.12-slim-bookworm AS builder
 WORKDIR /app
 
-# Install system dependencies for psycopg binary
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+    gcc libpq-dev curl && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install project dependencies
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY . .
+RUN uv sync --frozen --no-dev
 
 # Final stage — slim runtime image
 FROM python:3.12-slim-bookworm AS runner
@@ -20,9 +23,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app /app
-COPY --from=builder /root/.local /root/.local
 
-ENV PATH="/root/.local/bin:/app/.venv/bin:$PATH" \
+ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
 
