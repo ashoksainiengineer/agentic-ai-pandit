@@ -14,7 +14,7 @@ x-app-vars: &app-vars
   SENTRY_DSN: ${SENTRY_DSN:-}
   OTEL_ENABLED: "false"
   EPHEMERIS_SERVICE_URL: http://ephemeris:8001
-  ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
+  ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173,https://agentic-ai-pandit-ai-pandits-projects.vercel.app
 
 services:
   ephemeris:

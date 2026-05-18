@@ -9,12 +9,6 @@ availableSecrets:
       env: 'REDIS_URL'
     - versionName: projects/agentic-ai-pandit/secrets/clerk-secret-key/versions/latest
       env: 'CLERK_SECRET_KEY'
-    - versionName: projects/agentic-ai-pandit/secrets/groq-api-key/versions/latest
-      env: 'GROQ_API_KEY'
-    - versionName: projects/agentic-ai-pandit/secrets/anthropic-api-key/versions/latest
-      env: 'ANTHROPIC_API_KEY'
-    - versionName: projects/agentic-ai-pandit/secrets/deepseek-api-key/versions/latest
-      env: 'DEEPSEEK_API_KEY'
     - versionName: projects/agentic-ai-pandit/secrets/encryption-secret/versions/latest
       env: 'ENCRYPTION_SECRET'
     - versionName: projects/agentic-ai-pandit/secrets/sentry-dsn/versions/latest
@@ -73,7 +67,7 @@ steps:
           --max-instances 10 \
           --timeout 3600 \
           --set-env-vars APP_ENV=production,APP_PORT=8000,EPHEMERIS_SERVICE_URL=${_EPHEMERIS_SERVICE_URL},EPHEMERIS_SERVICE_TIMEOUT_MS=15000,USE_ASYNC_JOB_PIPELINE=true,JOB_EXECUTION_MODE=inline,GOOGLE_CLOUD_PROJECT=${PROJECT_ID} \
-          --set-secrets NEON_DATABASE_URL=neon-database-url:latest,REDIS_URL=redis-url:latest,CLERK_SECRET_KEY=clerk-secret-key:latest,GROQ_API_KEY=groq-api-key:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest,DEEPSEEK_API_KEY=deepseek-api-key:latest,ENCRYPTION_SECRET=encryption-secret:latest,SENTRY_DSN=sentry-dsn:latest
+          --set-secrets NEON_DATABASE_URL=neon-database-url:latest,REDIS_URL=redis-url:latest,CLERK_SECRET_KEY=clerk-secret-key:latest,ENCRYPTION_SECRET=encryption-secret:latest,SENTRY_DSN=sentry-dsn:latest
 
   # Deploy Ephemeris to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -109,5 +103,5 @@ timeout: 1800s
 
 substitutions:
   _REGION: asia-southeast1
-  _FRONTEND_URL: https://aipandit.app
+  _FRONTEND_URL: https://agentic-ai-pandit-ai-pandits-projects.vercel.app
   _EPHEMERIS_SERVICE_URL: http://ephemeris-service

@@ -1,11 +1,13 @@
-"""LLM Provider Protocol — ported from ai-pandit-app agent system.
+"""LLM Provider — Vertex AI only via Google Cloud Run.
 
-Tiered routing:
-  - CHEAP   -> Groq (Llama)          - lagna, dasha, varga node analysis
-  - MID     -> Claude Haiku           - fallback for cheap, or varga/forensic
-  - PREMIUM -> Claude Sonnet / DeepSeek - critic, forensic precision
+Since the app runs on Cloud Run (GCP), Vertex AI authentication is automatic
+via the service account — no API key needed.
 
-Every LLM call goes through this layer - never import LangChain providers
+Models:
+  - CHEAP   -> Gemini 2.5 Flash   - lagna, dasha, varga node analysis
+  - PREMIUM -> Gemini 2.5 Pro     - critic, forensic precision
+
+Every LLM call goes through this layer — never import LangChain providers
 directly in business logic.
 """
 
@@ -18,7 +20,7 @@ from dataclasses import dataclass, field
 from typing import Any, NoReturn, Protocol, runtime_checkable
 
 import structlog
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel
 
 from app.config import AITier, get_settings
 
@@ -47,10 +49,6 @@ class LLMProviderAuthError(LLMProviderError):
 
 
 class LLMProviderTimeoutError(LLMProviderError):
-    ...
-
-
-class LLMTierExhaustedError(LLMProviderError):
     ...
 
 
@@ -109,20 +107,27 @@ def _safe_content(result: Any) -> str:
     return str(content)
 
 
-class GroqAdapter:
+class VertexAIAdapter:
+    """Vertex AI adapter using Gemini models via GCP native auth.
+
+    No API key required — authentication is automatic when running on
+    Cloud Run via the GCP service account.
+    """
+
     def __init__(self, model: str | None = None) -> None:
         settings = get_settings()
-        self.model_name = model or settings.groq_model
+        self.model_name = model or settings.vertex_flash_model
 
-        from langchain_groq import ChatGroq
+        from langchain_google_vertexai import ChatVertexAI
 
-        self._llm: Any = ChatGroq(
-            model=self.model_name,
-            api_key=SecretStr(settings.groq_api_key),
+        self._llm: Any = ChatVertexAI(
+            model_name=self.model_name,
+            project=settings.google_cloud_project,
+            location="asia-southeast1",
             temperature=0.1,
-            max_tokens=4096,
+            max_output_tokens=4096,
         )
-        self._log = log.bind(provider="groq", model=self.model_name)
+        self._log = log.bind(provider="vertex", model=self.model_name)
 
     async def generate(
         self,
@@ -135,62 +140,7 @@ class GroqAdapter:
         t0 = time.monotonic()
         try:
             self._llm.temperature = temperature
-            self._llm.max_tokens = max_tokens
-            lc_messages = _build_lc_messages(system_prompt, messages)
-
-            if structured_output_schema is not None:
-                structured_llm = self._llm.with_structured_output(
-                    structured_output_schema, method="function_calling"
-                )
-                result = await structured_llm.ainvoke(lc_messages)
-                latency = (time.monotonic() - t0) * 1000
-                return LLMResponse(
-                    content=result.model_dump_json() if isinstance(result, BaseModel) else str(result),
-                    model=self.model_name,
-                    latency_ms=round(latency, 1),
-                )
-
-            result = await self._llm.ainvoke(lc_messages)
-            latency = (time.monotonic() - t0) * 1000
-            return LLMResponse(
-                content=_safe_content(result),
-                token_usage=_safe_token_usage(result),
-                model=self.model_name,
-                latency_ms=round(latency, 1),
-            )
-
-        except Exception as exc:
-            _raise_provider_error(exc, t0)
-
-
-class AnthropicAdapter:
-    def __init__(self, model: str | None = None) -> None:
-        settings = get_settings()
-        self.model_name = model or settings.anthropic_sonnet_model
-
-        from langchain_anthropic import ChatAnthropic
-
-        init_kwargs: dict[str, Any] = {
-            "model_name": self.model_name,
-        }
-        self._llm: Any = ChatAnthropic(**init_kwargs)
-        self._llm.temperature = 0.1
-        self._llm.max_tokens = 4096
-        self._llm.anthropic_api_key = SecretStr(settings.anthropic_api_key)
-        self._log = log.bind(provider="anthropic", model=self.model_name)
-
-    async def generate(
-        self,
-        system_prompt: str,
-        messages: Sequence[dict[str, str]],
-        structured_output_schema: type[BaseModel] | None = None,
-        temperature: float = 0.1,
-        max_tokens: int = 4096,
-    ) -> LLMResponse:
-        t0 = time.monotonic()
-        try:
-            self._llm.temperature = temperature
-            self._llm.max_tokens = max_tokens
+            self._llm.max_output_tokens = max_tokens
             lc_messages = _build_lc_messages(system_prompt, messages)
 
             if structured_output_schema is not None:
@@ -218,122 +168,12 @@ class AnthropicAdapter:
             _raise_provider_error(exc, t0)
 
 
-class DeepSeekAdapter:
-    def __init__(self, model: str | None = None) -> None:
-        settings = get_settings()
-        self.model_name = model or settings.deepseek_model
-
-        from langchain_openai import ChatOpenAI
-
-        self._llm: Any = ChatOpenAI(
-            model=self.model_name,
-            api_key=SecretStr(settings.deepseek_api_key),
-            base_url="https://api.deepseek.com/v1",
-            temperature=0.1,
-            max_tokens=4096,
-        )
-        self._log = log.bind(provider="deepseek", model=self.model_name)
-
-    async def generate(
-        self,
-        system_prompt: str,
-        messages: Sequence[dict[str, str]],
-        structured_output_schema: type[BaseModel] | None = None,
-        temperature: float = 0.1,
-        max_tokens: int = 4096,
-    ) -> LLMResponse:
-        t0 = time.monotonic()
-        try:
-            self._llm.temperature = temperature
-            self._llm.max_tokens = max_tokens
-            lc_messages = _build_lc_messages(system_prompt, messages)
-
-            if structured_output_schema is not None:
-                structured_llm = self._llm.with_structured_output(
-                    structured_output_schema, method="function_calling"
-                )
-                result = await structured_llm.ainvoke(lc_messages)
-                latency = (time.monotonic() - t0) * 1000
-                return LLMResponse(
-                    content=result.model_dump_json() if isinstance(result, BaseModel) else str(result),
-                    model=self.model_name,
-                    latency_ms=round(latency, 1),
-                )
-
-            result = await self._llm.ainvoke(lc_messages)
-            latency = (time.monotonic() - t0) * 1000
-            return LLMResponse(
-                content=_safe_content(result),
-                token_usage=_safe_token_usage(result),
-                model=self.model_name,
-                latency_ms=round(latency, 1),
-            )
-
-        except Exception as exc:
-            _raise_provider_error(exc, t0)
-
-
-class VertexAIAdapter:
-    def __init__(self, model: str | None = None) -> None:
-        settings = get_settings()
-        self.model_name = model or settings.vertex_flash_model
-
-        from langchain_openai import ChatOpenAI
-
-        self._llm: Any = ChatOpenAI(
-            model=self.model_name,
-            api_key=SecretStr(settings.vertex_api_key),
-            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
-            temperature=0.1,
-            max_tokens=4096,
-        )
-        self._log = log.bind(provider="vertex", model=self.model_name)
-
-    async def generate(
-        self,
-        system_prompt: str,
-        messages: Sequence[dict[str, str]],
-        structured_output_schema: type[BaseModel] | None = None,
-        temperature: float = 0.1,
-        max_tokens: int = 4096,
-    ) -> LLMResponse:
-        t0 = time.monotonic()
-        try:
-            self._llm.temperature = temperature
-            self._llm.max_tokens = max_tokens
-            lc_messages = _build_lc_messages(system_prompt, messages)
-
-            if structured_output_schema is not None:
-                structured_llm = self._llm.with_structured_output(
-                    structured_output_schema, method="function_calling"
-                )
-                result = await structured_llm.ainvoke(lc_messages)
-                latency = (time.monotonic() - t0) * 1000
-                return LLMResponse(
-                    content=result.model_dump_json() if isinstance(result, BaseModel) else str(result),
-                    model=self.model_name,
-                    latency_ms=round(latency, 1),
-                )
-
-            result = await self._llm.ainvoke(lc_messages)
-            latency = (time.monotonic() - t0) * 1000
-            return LLMResponse(
-                content=_safe_content(result),
-                token_usage=_safe_token_usage(result),
-                model=self.model_name,
-                latency_ms=round(latency, 1),
-            )
-
-        except Exception as exc:
-            _raise_provider_error(exc, t0)
-
-
 def _raise_provider_error(exc: Exception, t0: float) -> NoReturn:
     latency = (time.monotonic() - t0) * 1000
     err_str = str(exc).lower()
     if "rate" in err_str or "quota" in err_str:
         raise LLMProviderRateLimitError(str(exc)) from exc
-    if "auth" in err_str or "unauthorized" in err_str or "key" in err_str:
+    if "auth" in err_str or "unauthorized" in err_str or "permission" in err_str:
         raise LLMProviderAuthError(str(exc)) from exc
     if "timeout" in err_str:
         raise LLMProviderTimeoutError(str(exc)) from exc
@@ -341,52 +181,29 @@ def _raise_provider_error(exc: Exception, t0: float) -> NoReturn:
 
 
 class TierRouter:
-    """Routes LLM calls to the right provider based on complexity tier.
+    """Routes LLM calls to the right Gemini model based on complexity tier.
 
     Tier mapping:
-      - CHEAP   -> Groq (primary)
-      - MID     -> Anthropic Haiku (primary), DeepSeek (fallback)
-      - PREMIUM -> Anthropic Sonnet (primary), DeepSeek (fallback)
+      - CHEAP   -> Gemini 2.5 Flash  - lagna, dasha, varga node analysis
+      - PREMIUM -> Gemini 2.5 Pro    - critic, forensic precision
 
-    Each provider has a circuit breaker: 5 consecutive failures opens
-    the circuit for 60 seconds before allowing a trial request.
+    Both use Vertex AI with automatic GCP service account auth.
     """
 
     def __init__(self) -> None:
         settings = get_settings()
-        use_vertex = bool(settings.vertex_api_key)
 
-        if use_vertex:
-            self._providers: dict[AITier, list[tuple[LLMProvider, str]]] = {
-                AITier.CHEAP: [
-                    (VertexAIAdapter(settings.vertex_flash_model), "vertex_flash"),
-                    (GroqAdapter(settings.groq_model), "groq_cheap"),
-                ],
-                AITier.MID: [
-                    (VertexAIAdapter(settings.vertex_flash_model), "vertex_flash"),
-                    (AnthropicAdapter(settings.anthropic_haiku_model), "anthropic_haiku"),
-                    (DeepSeekAdapter(), "deepseek_fallback"),
-                ],
-                AITier.PREMIUM: [
-                    (VertexAIAdapter(settings.vertex_pro_model), "vertex_pro"),
-                    (AnthropicAdapter(settings.anthropic_sonnet_model), "anthropic_sonnet"),
-                    (DeepSeekAdapter(), "deepseek_fallback"),
-                ],
-            }
-        else:
-            self._providers = {
-                AITier.CHEAP: [
-                    (GroqAdapter(settings.groq_model), "groq_cheap"),
-                ],
-                AITier.MID: [
-                    (AnthropicAdapter(settings.anthropic_haiku_model), "anthropic_haiku"),
-                    (DeepSeekAdapter(), "deepseek_fallback"),
-                ],
-                AITier.PREMIUM: [
-                    (AnthropicAdapter(settings.anthropic_sonnet_model), "anthropic_sonnet"),
-                    (DeepSeekAdapter(), "deepseek_fallback"),
-                ],
-            }
+        self._providers: dict[AITier, list[tuple[LLMProvider, str]]] = {
+            AITier.CHEAP: [
+                (VertexAIAdapter(settings.vertex_flash_model), "vertex_flash"),
+            ],
+            AITier.MID: [
+                (VertexAIAdapter(settings.vertex_flash_model), "vertex_flash"),
+            ],
+            AITier.PREMIUM: [
+                (VertexAIAdapter(settings.vertex_pro_model), "vertex_pro"),
+            ],
+        }
         self._circuit_breakers: dict[str, _CircuitState] = {}
         self._log = log.bind(component="TierRouter")
 
@@ -421,14 +238,14 @@ class TierRouter:
                 self._record_failure(name)
                 last_error = exc
                 self._log.warning(
-                    "provider_failed_falling_back",
+                    "provider_failed",
                     provider=name,
                     error=str(exc)[:200],
                 )
                 continue
 
-        raise LLMTierExhaustedError(
-            f"All providers in tier {tier} exhausted. Last error: {last_error}"
+        raise LLMProviderError(
+            f"Vertex AI provider exhausted. Last error: {last_error}"
         ) from last_error
 
     def _is_circuit_open(self, name: str) -> bool:
@@ -474,10 +291,8 @@ class TokenUsage:
 
 
 MODEL_COST_PER_1M_TOKENS: dict[str, tuple[float, float]] = {
-    "llama-3.2-90b": (0.59, 0.79),
-    "claude-3-haiku-20240307": (0.25, 1.25),
-    "claude-3-5-sonnet-latest": (3.00, 15.00),
-    "deepseek-reasoner": (0.55, 2.19),
+    "gemini-2.5-flash-preview-04-17": (0.15, 0.60),
+    "gemini-2.5-pro-preview-03-25": (1.25, 10.00),
 }
 
 DEFAULT_COST: tuple[float, float] = (1.0, 3.0)
@@ -488,8 +303,8 @@ class TokenTracker:
 
     Usage::
         tracker = TokenTracker(max_tokens=100_000)
-        tracker.record("lagna", "groq", prompt=500, completion=200)
-        tracker.record("dasha", "anthropic", prompt=800, completion=300)
+        tracker.record("lagna", "gemini-2.5-flash", prompt=500, completion=200)
+        tracker.record("dasha", "gemini-2.5-flash", prompt=800, completion=300)
         tracker.total_tokens  # 1800
         tracker.stage_usage["lagna"].total_tokens  # 700
     """

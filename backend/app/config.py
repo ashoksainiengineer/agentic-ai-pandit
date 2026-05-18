@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     app_port: int = 8000
     app_host: str = "0.0.0.0"
     app_name: str = "ai-pandit-agentic"
-    allowed_origins: str = "http://localhost:3000,http://localhost:5173"
+    allowed_origins: str = "http://localhost:3000,http://localhost:5173,https://agentic-ai-pandit-ai-pandits-projects.vercel.app"
 
     neon_database_url: str = Field(default="", min_length=1)
 
@@ -52,17 +52,8 @@ class Settings(BaseSettings):
 
     clerk_secret_key: str = Field(default="", min_length=1)
 
-    groq_api_key: str = Field(default="", min_length=1)
-    groq_model: str = "llama-3.2-90b"
-    anthropic_api_key: str = Field(default="", min_length=1)
-    anthropic_haiku_model: str = "claude-3-haiku-20240307"
-    anthropic_sonnet_model: str = "claude-3-5-sonnet-latest"
-    deepseek_api_key: str = Field(default="", min_length=1)
-    deepseek_model: str = "deepseek-reasoner"
-
-    vertex_api_key: str = Field(default="", min_length=1)
-    vertex_flash_model: str = "gemini-1.5-flash"
-    vertex_pro_model: str = "gemini-1.5-pro"
+    vertex_flash_model: str = "gemini-2.5-flash-preview-04-17"
+    vertex_pro_model: str = "gemini-2.5-pro-preview-03-25"
 
     encryption_secret: str = Field(default="", min_length=32)
 
@@ -73,7 +64,7 @@ class Settings(BaseSettings):
 
     google_cloud_project: str = Field(default="agentic-ai-pandit")
     google_cloud_tasks_queue: str = "btr-jobs"
-    google_cloud_storage_bucket: str = "ai-pandit-btr-archive"
+    google_cloud_storage_bucket: str = "agentic-ai-pandit-btr-archive"
 
     sentry_dsn: str = Field(default="")
     otel_enabled: bool = False

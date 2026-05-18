@@ -153,7 +153,7 @@ main() {
   local region="${CLOUD_RUN_REGION:-asia-southeast1}"
 
   # Shared secrets for API and BTR Worker
-  local api_secrets="NEON_DATABASE_URL=neon-database-url:latest,REDIS_URL=redis-url:latest,CLERK_SECRET_KEY=clerk-secret-key:latest,GROQ_API_KEY=groq-api-key:latest,ANTHROPIC_API_KEY=anthropic-api-key:latest,DEEPSEEK_API_KEY=deepseek-api-key:latest,ENCRYPTION_SECRET=encryption-secret:latest,SENTRY_DSN=sentry-dsn:latest"
+  local api_secrets="NEON_DATABASE_URL=neon-database-url:latest,REDIS_URL=redis-url:latest,CLERK_SECRET_KEY=clerk-secret-key:latest,ENCRYPTION_SECRET=encryption-secret:latest,SENTRY_DSN=sentry-dsn:latest"
 
   if [ "$DEPLOY_TARGET" = "all" ] || [ "$DEPLOY_TARGET" = "ephemeris" ]; then
     deploy_service \

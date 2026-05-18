@@ -81,7 +81,7 @@ gcloud run deploy ephemeris-service \
 
 # ── 6. Set up Secret Manager secrets (templates) ─────────────────────────────
 echo "[6/6] Creating Secret Manager secrets (add values via console)..."
-for secret in neon-database-url redis-url clerk-secret-key groq-api-key anthropic-api-key deepseek-api-key encryption-secret sentry-dsn; do
+for secret in neon-database-url redis-url clerk-secret-key encryption-secret sentry-dsn; do
   gcloud secrets describe "${secret}" --project="${PROJECT_ID}" >/dev/null 2>&1 \
     && echo "  Secret '${secret}' already exists." \
     || (echo -n "placeholder" | gcloud secrets create "${secret}" \
