@@ -27,8 +27,12 @@ class AgentVerdict(BaseModel):
 
     candidate_id: str = Field(..., description="Candidate time identifier")
     score: float = Field(..., ge=0, le=100, description="Confidence score 0-100")
-    reasoning: str = Field(..., min_length=10, description="Astrological reasoning for the score")
-    red_flags: list[str] = Field(default_factory=list, description="Any concerns or warnings")
+    reasoning: str = Field(
+        ..., min_length=10, description="Astrological reasoning for the score"
+    )
+    red_flags: list[str] = Field(
+        default_factory=list, description="Any concerns or warnings"
+    )
     recommended_action: str = Field(
         default="keep",
         description="'keep' | 'eliminate' | 'promote' | 're-evaluate'",
@@ -39,7 +43,9 @@ class BatchVerdict(BaseModel):
     """Aggregated verdicts for a batch of candidates."""
 
     verdicts: list[AgentVerdict] = Field(..., min_length=1, max_length=50)
-    batch_summary: str = Field(default="", description="High-level summary of the batch analysis")
+    batch_summary: str = Field(
+        default="", description="High-level summary of the batch analysis"
+    )
 
 
 # ──────────────────────────────────────────────────────────────

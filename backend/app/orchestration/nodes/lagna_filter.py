@@ -31,7 +31,9 @@ async def lagna_filter_node(state: BTRState) -> dict[str, Any]:
     candidates: list[CandidateDataPackage] = state.get("candidates", [])
 
     if not candidates or not anchor_events:
-        log.warning("lagna_filter_skip", candidates=len(candidates), events=len(anchor_events))
+        log.warning(
+            "lagna_filter_skip", candidates=len(candidates), events=len(anchor_events)
+        )
         return {}
 
     tier_router = TierRouter()
@@ -79,7 +81,9 @@ async def _evaluate_candidate_lagna(
         )
         _boundary = await tool_get_boundary_safety(boundary_input)
     except Exception as exc:
-        log.warning("lagna_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100])
+        log.warning(
+            "lagna_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100]
+        )
         return AgentVerdict(
             candidate_id=candidate.candidate_key or candidate.time,
             score=30.0,
@@ -110,13 +114,20 @@ async def _evaluate_candidate_lagna(
         )
 
 
-def _parse_agent_verdict(raw_content: str, candidate: CandidateDataPackage) -> AgentVerdict:
+def _parse_agent_verdict(
+    raw_content: str, candidate: CandidateDataPackage
+) -> AgentVerdict:
     try:
         data = json.loads(raw_content)
         return AgentVerdict.model_validate(data)
     except (json.JSONDecodeError, Exception) as exc:
-        log.warning("verdict_parse_fallback", error=str(exc)[:100], content_preview=raw_content[:200])
+        log.warning(
+            "verdict_parse_fallback",
+            error=str(exc)[:100],
+            content_preview=raw_content[:200],
+        )
         from app.agents.structured_output import parse_agent_verdict_xml
+
         verdicts = parse_agent_verdict_xml(raw_content)
         if verdicts:
             return verdicts[0]
@@ -129,18 +140,20 @@ def _parse_agent_verdict(raw_content: str, candidate: CandidateDataPackage) -> A
         )
 
 
-def _build_lagna_user_message(candidate: CandidateDataPackage, events: list[LifeEvent]) -> str:
+def _build_lagna_user_message(
+    candidate: CandidateDataPackage, events: list[LifeEvent]
+) -> str:
     event_summaries = "\n".join(
         f"  - [{e.category.value}] {e.event_type} ({e.event_date}, {e.importance.value})"
         for e in events[:5]
     )
     return (
-        f'{{\n'
+        f"{{\n"
         f'  "candidate_id": "{candidate.candidate_key or candidate.time}",\n'
         f'  "lagna_sign": "{candidate.ascendant.sign if candidate.ascendant else "N/A"}",\n'
         f'  "moon_nakshatra": "{candidate.moon_nakshatra or "N/A"}",\n'
         f'  "anchor_events": [\n'
-        f'{event_summaries}\n'
-        f'  ]\n'
-        f'}}'
+        f"{event_summaries}\n"
+        f"  ]\n"
+        f"}}"
     )

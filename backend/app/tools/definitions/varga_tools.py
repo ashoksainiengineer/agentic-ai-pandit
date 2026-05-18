@@ -30,7 +30,17 @@ from app.tools.ephemeris_client import (
 
 # ── shared helpers ──────────────────────────────────────────
 
-PLANET_NAMES = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "rahu", "ketu"]
+PLANET_NAMES = [
+    "sun",
+    "moon",
+    "mercury",
+    "venus",
+    "mars",
+    "jupiter",
+    "saturn",
+    "rahu",
+    "ketu",
+]
 
 # Varga division counts
 VARGA_DIVISIONS: dict[str, int] = {
@@ -51,14 +61,14 @@ VARGA_DIVISIONS: dict[str, int] = {
 # Starting sign indices for modality-based vargas (movable/fixed/dual)
 # D2 uses odd/even, D9 uses elements, D150 uses special formula
 VARGA_START_SIGNS: dict[str, list[int]] = {
-    "D7": [0, 4, 8],    # Aries, Leo, Sagittarius
-    "D10": [0, 4, 8],   # Aries, Leo, Sagittarius
-    "D12": [0, 4, 8],   # Aries, Leo, Sagittarius
-    "D24": [0, 4, 8],   # Aries, Leo, Sagittarius
-    "D30": [0, 4, 8],   # Aries, Leo, Sagittarius
-    "D40": [0, 4, 8],   # Aries, Leo, Sagittarius
-    "D45": [0, 4, 8],   # Aries, Leo, Sagittarius
-    "D60": [0, 4, 8],   # Aries, Leo, Sagittarius
+    "D7": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D10": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D12": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D24": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D30": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D40": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D45": [0, 4, 8],  # Aries, Leo, Sagittarius
+    "D60": [0, 4, 8],  # Aries, Leo, Sagittarius
 }
 
 # D9 element-based starting signs (fire/earth/air/water)
@@ -195,14 +205,24 @@ class DivisionalChartsOutput(BaseModel):
     planets: list[VargaPlanetEntry]
 
 
-def _chart_to_divisional(chart: EphemerisServiceChartResponse) -> DivisionalChartsOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+def _chart_to_divisional(
+    chart: EphemerisServiceChartResponse,
+) -> DivisionalChartsOutput:
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
 
     varga_names = [
-        "D1", "D2", "D7", "D9", "D10", "D12",
-        "D24", "D30", "D40", "D45", "D60", "D150",
+        "D1",
+        "D2",
+        "D7",
+        "D9",
+        "D10",
+        "D12",
+        "D24",
+        "D30",
+        "D40",
+        "D45",
+        "D60",
+        "D150",
     ]
 
     lagna_signs: dict[str, str] = {}
@@ -344,6 +364,7 @@ def _next_nakshatra(longitude: float) -> str:
     idx = int(longitude / NAKSHATRA_SPAN_DEG) % 27
     next_idx = (idx + 1) % 27
     from app.tools.definitions.ephemeris_tools import NAKSHATRA_NAMES
+
     return NAKSHATRA_NAMES[next_idx]
 
 
@@ -351,15 +372,14 @@ def _prev_nakshatra(longitude: float) -> str:
     idx = int(longitude / NAKSHATRA_SPAN_DEG) % 27
     prev_idx = (idx - 1) % 27
     from app.tools.definitions.ephemeris_tools import NAKSHATRA_NAMES
+
     return NAKSHATRA_NAMES[prev_idx]
 
 
 def _calculate_boundary_safety(
     chart: EphemerisServiceChartResponse,
 ) -> BoundarySafetyOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     planet_positions = _build_planet_positions(chart)
     moon_lon = planet_positions.get("moon", 0.0)
 
@@ -369,69 +389,67 @@ def _calculate_boundary_safety(
     lagna_to_next, lagna_to_prev = _seconds_to_sign_boundary(
         asc_sidereal, ASCENDANT_SPEED_DEG_PER_DAY
     )
-    boundaries.append(BoundaryEntry(
-        boundary_type="lagna_sign",
-        seconds_to_next=round(lagna_to_next, 1),
-        seconds_to_previous=round(lagna_to_prev, 1),
-        current_sign=_get_sign(asc_sidereal),
-        next_sign=_next_sign(asc_sidereal),
-        previous_sign=_prev_sign(asc_sidereal),
-        is_safe=lagna_to_next > 600 and lagna_to_prev > 600,
-    ))
+    boundaries.append(
+        BoundaryEntry(
+            boundary_type="lagna_sign",
+            seconds_to_next=round(lagna_to_next, 1),
+            seconds_to_previous=round(lagna_to_prev, 1),
+            current_sign=_get_sign(asc_sidereal),
+            next_sign=_next_sign(asc_sidereal),
+            previous_sign=_prev_sign(asc_sidereal),
+            is_safe=lagna_to_next > 600 and lagna_to_prev > 600,
+        )
+    )
 
     # Moon nakshatra boundary
     moon_to_next, moon_to_prev = _seconds_to_nakshatra_boundary(
         moon_lon, PLANET_SPEEDS_DEG_PER_DAY["moon"]
     )
-    boundaries.append(BoundaryEntry(
-        boundary_type="moon_nakshatra",
-        seconds_to_next=round(moon_to_next, 1),
-        seconds_to_previous=round(moon_to_prev, 1),
-        current_sign=_get_nakshatra(moon_lon)[0],
-        next_sign=_next_nakshatra(moon_lon),
-        previous_sign=_prev_nakshatra(moon_lon),
-        is_safe=moon_to_next > 3600 and moon_to_prev > 3600,
-    ))
+    boundaries.append(
+        BoundaryEntry(
+            boundary_type="moon_nakshatra",
+            seconds_to_next=round(moon_to_next, 1),
+            seconds_to_previous=round(moon_to_prev, 1),
+            current_sign=_get_nakshatra(moon_lon)[0],
+            next_sign=_next_nakshatra(moon_lon),
+            previous_sign=_prev_nakshatra(moon_lon),
+            is_safe=moon_to_next > 3600 and moon_to_prev > 3600,
+        )
+    )
 
     # D9 lagna boundary
     d9_to_next, d9_to_prev = _seconds_to_varga_boundary(
         asc_sidereal, "D9", ASCENDANT_SPEED_DEG_PER_DAY
     )
-    boundaries.append(BoundaryEntry(
-        boundary_type="d9_lagna",
-        seconds_to_next=round(d9_to_next, 1),
-        seconds_to_previous=round(d9_to_prev, 1),
-        current_sign=_calculate_d9_sign(asc_sidereal),
-        next_sign=_calculate_d9_sign(
-            (asc_sidereal + 3.3333333) % 360
-        ),
-        previous_sign=_calculate_d9_sign(
-            (asc_sidereal - 3.3333333 + 360) % 360
-        ),
-        is_safe=d9_to_next > 300 and d9_to_prev > 300,
-    ))
+    boundaries.append(
+        BoundaryEntry(
+            boundary_type="d9_lagna",
+            seconds_to_next=round(d9_to_next, 1),
+            seconds_to_previous=round(d9_to_prev, 1),
+            current_sign=_calculate_d9_sign(asc_sidereal),
+            next_sign=_calculate_d9_sign((asc_sidereal + 3.3333333) % 360),
+            previous_sign=_calculate_d9_sign((asc_sidereal - 3.3333333 + 360) % 360),
+            is_safe=d9_to_next > 300 and d9_to_prev > 300,
+        )
+    )
 
     # D60 planet boundaries (for Moon and Lagna)
     for label, lon, speed in [
         ("d60_moon", moon_lon, PLANET_SPEEDS_DEG_PER_DAY["moon"]),
         ("d60_lagna", asc_sidereal, ASCENDANT_SPEED_DEG_PER_DAY),
     ]:
-        d60_to_next, d60_to_prev = _seconds_to_varga_boundary(
-            lon, "D60", speed
+        d60_to_next, d60_to_prev = _seconds_to_varga_boundary(lon, "D60", speed)
+        boundaries.append(
+            BoundaryEntry(
+                boundary_type=label,
+                seconds_to_next=round(d60_to_next, 1),
+                seconds_to_previous=round(d60_to_prev, 1),
+                current_sign=_get_varga_sign(lon, "D60"),
+                next_sign=_get_varga_sign((lon + 0.5) % 360, "D60"),
+                previous_sign=_get_varga_sign((lon - 0.5 + 360) % 360, "D60"),
+                is_safe=d60_to_next > 120 and d60_to_prev > 120,
+            )
         )
-        boundaries.append(BoundaryEntry(
-            boundary_type=label,
-            seconds_to_next=round(d60_to_next, 1),
-            seconds_to_previous=round(d60_to_prev, 1),
-            current_sign=_get_varga_sign(lon, "D60"),
-            next_sign=_get_varga_sign(
-                (lon + 0.5) % 360, "D60"
-            ),
-            previous_sign=_get_varga_sign(
-                (lon - 0.5 + 360) % 360, "D60"
-            ),
-            is_safe=d60_to_next > 120 and d60_to_prev > 120,
-        ))
 
     # Overall safety assessment
     unsafe = [b for b in boundaries if not b.is_safe]
@@ -513,8 +531,12 @@ class BoundaryChangesInput(BaseModel):
     longitude: float = Field(..., ge=-180, le=180)
     ayanamsha_mode: str = "lahiri"
     house_system: str = "placidus"
-    sweep_minutes: int = Field(default=120, ge=30, le=240, description="Minutes to sweep on each side")
-    step_seconds: int = Field(default=15, ge=5, le=60, description="Step size in seconds")
+    sweep_minutes: int = Field(
+        default=120, ge=30, le=240, description="Minutes to sweep on each side"
+    )
+    step_seconds: int = Field(
+        default=15, ge=5, le=60, description="Step size in seconds"
+    )
 
 
 class TransitionEntry(BaseModel):
@@ -573,9 +595,7 @@ def _detect_transitions(
         prev_d60[p] = _get_varga_sign(center_positions.get(p, 0.0), "D60")
 
     for chart in charts:
-        asc = _sidereal_longitude(
-            chart.houses.ascendant_tropical, chart.ayanamsha
-        )
+        asc = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
         positions = _build_planet_positions(chart)
         moon = positions.get("moon", 0.0)
 
@@ -583,54 +603,78 @@ def _detect_transitions(
         moon_nak = _get_nakshatra(moon)[0]
 
         if lagna_sign != prev_lagna_sign:
-            direction = "forward" if chart.timestamp_utc > center_chart.timestamp_utc else "backward"
-            transitions.append(TransitionEntry(
-                transition_type="lagna_sign",
-                planet="ascendant",
-                from_sign=prev_lagna_sign,
-                to_sign=lagna_sign,
-                timestamp_utc=chart.timestamp_utc,
-                direction=direction,
-            ))
+            direction = (
+                "forward"
+                if chart.timestamp_utc > center_chart.timestamp_utc
+                else "backward"
+            )
+            transitions.append(
+                TransitionEntry(
+                    transition_type="lagna_sign",
+                    planet="ascendant",
+                    from_sign=prev_lagna_sign,
+                    to_sign=lagna_sign,
+                    timestamp_utc=chart.timestamp_utc,
+                    direction=direction,
+                )
+            )
             prev_lagna_sign = lagna_sign
 
         if moon_nak != prev_moon_nak:
-            direction = "forward" if chart.timestamp_utc > center_chart.timestamp_utc else "backward"
-            transitions.append(TransitionEntry(
-                transition_type="moon_nakshatra",
-                planet="moon",
-                from_sign=prev_moon_nak,
-                to_sign=moon_nak,
-                timestamp_utc=chart.timestamp_utc,
-                direction=direction,
-            ))
+            direction = (
+                "forward"
+                if chart.timestamp_utc > center_chart.timestamp_utc
+                else "backward"
+            )
+            transitions.append(
+                TransitionEntry(
+                    transition_type="moon_nakshatra",
+                    planet="moon",
+                    from_sign=prev_moon_nak,
+                    to_sign=moon_nak,
+                    timestamp_utc=chart.timestamp_utc,
+                    direction=direction,
+                )
+            )
             prev_moon_nak = moon_nak
 
         for p in PLANET_NAMES:
             d10_sign = _get_varga_sign(positions.get(p, 0.0), "D10")
             if d10_sign != prev_d10.get(p, ""):
-                direction = "forward" if chart.timestamp_utc > center_chart.timestamp_utc else "backward"
-                transitions.append(TransitionEntry(
-                    transition_type="d10_sign",
-                    planet=p,
-                    from_sign=prev_d10.get(p, ""),
-                    to_sign=d10_sign,
-                    timestamp_utc=chart.timestamp_utc,
-                    direction=direction,
-                ))
+                direction = (
+                    "forward"
+                    if chart.timestamp_utc > center_chart.timestamp_utc
+                    else "backward"
+                )
+                transitions.append(
+                    TransitionEntry(
+                        transition_type="d10_sign",
+                        planet=p,
+                        from_sign=prev_d10.get(p, ""),
+                        to_sign=d10_sign,
+                        timestamp_utc=chart.timestamp_utc,
+                        direction=direction,
+                    )
+                )
                 prev_d10[p] = d10_sign
 
             d60_sign = _get_varga_sign(positions.get(p, 0.0), "D60")
             if d60_sign != prev_d60.get(p, ""):
-                direction = "forward" if chart.timestamp_utc > center_chart.timestamp_utc else "backward"
-                transitions.append(TransitionEntry(
-                    transition_type="d60_sign",
-                    planet=p,
-                    from_sign=prev_d60.get(p, ""),
-                    to_sign=d60_sign,
-                    timestamp_utc=chart.timestamp_utc,
-                    direction=direction,
-                ))
+                direction = (
+                    "forward"
+                    if chart.timestamp_utc > center_chart.timestamp_utc
+                    else "backward"
+                )
+                transitions.append(
+                    TransitionEntry(
+                        transition_type="d60_sign",
+                        planet=p,
+                        from_sign=prev_d60.get(p, ""),
+                        to_sign=d60_sign,
+                        timestamp_utc=chart.timestamp_utc,
+                        direction=direction,
+                    )
+                )
                 prev_d60[p] = d60_sign
 
     return transitions

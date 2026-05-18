@@ -4,7 +4,6 @@ Tests cover registration, execution, circuit breaker, cache,
 error handling, and the four retry/cache scenarios.
 """
 
-
 import pytest
 from pydantic import BaseModel
 
@@ -163,7 +162,11 @@ class TestCircuitBreaker:
         """Registry circuit breaker blocks after consecutive failures."""
         registry = ToolRegistry()
         spec = _FAILING_SPEC
-        registry.register(spec, _failing_fn, circuit_breaker=CircuitBreaker("failing", failure_threshold=2))
+        registry.register(
+            spec,
+            _failing_fn,
+            circuit_breaker=CircuitBreaker("failing", failure_threshold=2),
+        )
 
         # First two calls — fail, but breaker still allows
         for _ in range(2):
@@ -254,16 +257,22 @@ class TestCache:
 
         await registry.call("lru_test", value="a")  # mem: {a}        — miss (1)
         await registry.call("lru_test", value="b")  # mem: {a, b}     — miss (2)
-        await registry.call("lru_test", value="c")  # mem: {b, c}     — miss (3, a evicted)
+        await registry.call(
+            "lru_test", value="c"
+        )  # mem: {b, c}     — miss (3, a evicted)
 
         assert fn_call_count == 3
 
         # "a" was evicted — miss again
-        await registry.call("lru_test", value="a")  # mem: {c, a}     — miss (4, b evicted)
+        await registry.call(
+            "lru_test", value="a"
+        )  # mem: {c, a}     — miss (4, b evicted)
         assert fn_call_count == 4
 
         # "b" was evicted when "a" was inserted — miss again
-        await registry.call("lru_test", value="b")  # mem: {a, b}     — miss (5, c evicted)
+        await registry.call(
+            "lru_test", value="b"
+        )  # mem: {a, b}     — miss (5, c evicted)
         assert fn_call_count == 5
 
 
@@ -278,6 +287,7 @@ class TestErrorPropagation:
         registry = ToolRegistry()
         registry.register(_ECHO_SPEC, _echo_fn)
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             await registry.call("echo", unknown_field="x")
 
@@ -285,7 +295,11 @@ class TestErrorPropagation:
     async def test_circuit_breaker_open_on_call(self) -> None:
         registry = ToolRegistry()
         spec = _FAILING_SPEC
-        registry.register(spec, _failing_fn, circuit_breaker=CircuitBreaker("failing", failure_threshold=2))
+        registry.register(
+            spec,
+            _failing_fn,
+            circuit_breaker=CircuitBreaker("failing", failure_threshold=2),
+        )
 
         for _ in range(2):
             with pytest.raises(ToolExecutionError):

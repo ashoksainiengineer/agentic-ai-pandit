@@ -20,37 +20,106 @@ from app.tools.ephemeris_client import (
 
 # ── shared helpers ──────────────────────────────────────────
 
-PLANET_NAMES = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "rahu", "ketu"]
+PLANET_NAMES = [
+    "sun",
+    "moon",
+    "mercury",
+    "venus",
+    "mars",
+    "jupiter",
+    "saturn",
+    "rahu",
+    "ketu",
+]
 
 ZODIAC_SIGNS = [
-    "Aries", "Taurus", "Gemini", "Cancer",
-    "Leo", "Virgo", "Libra", "Scorpio",
-    "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
 ]
 
 NAKSHATRA_NAMES = [
-    "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira",
-    "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha",
-    "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra",
-    "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula",
-    "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta",
-    "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati",
+    "Ashwini",
+    "Bharani",
+    "Krittika",
+    "Rohini",
+    "Mrigashira",
+    "Ardra",
+    "Punarvasu",
+    "Pushya",
+    "Ashlesha",
+    "Magha",
+    "Purva Phalguni",
+    "Uttara Phalguni",
+    "Hasta",
+    "Chitra",
+    "Swati",
+    "Vishakha",
+    "Anuradha",
+    "Jyeshtha",
+    "Mula",
+    "Purva Ashadha",
+    "Uttara Ashadha",
+    "Shravana",
+    "Dhanishta",
+    "Shatabhisha",
+    "Purva Bhadrapada",
+    "Uttara Bhadrapada",
+    "Revati",
 ]
 
 NAKSHATRA_LORDS = [
-    "ketu", "venus", "sun", "moon", "mars",
-    "rahu", "jupiter", "saturn", "mercury", "ketu",
-    "venus", "sun", "moon", "mars", "rahu",
-    "jupiter", "saturn", "mercury", "ketu", "venus",
-    "sun", "moon", "mars", "rahu", "jupiter",
-    "saturn", "mercury",
+    "ketu",
+    "venus",
+    "sun",
+    "moon",
+    "mars",
+    "rahu",
+    "jupiter",
+    "saturn",
+    "mercury",
+    "ketu",
+    "venus",
+    "sun",
+    "moon",
+    "mars",
+    "rahu",
+    "jupiter",
+    "saturn",
+    "mercury",
+    "ketu",
+    "venus",
+    "sun",
+    "moon",
+    "mars",
+    "rahu",
+    "jupiter",
+    "saturn",
+    "mercury",
 ]
 
 SIGN_LORDS: dict[str, str] = {
-    "Aries": "mars", "Taurus": "venus", "Gemini": "mercury",
-    "Cancer": "moon", "Leo": "sun", "Virgo": "mercury",
-    "Libra": "venus", "Scorpio": "mars", "Sagittarius": "jupiter",
-    "Capricorn": "saturn", "Aquarius": "saturn", "Pisces": "jupiter",
+    "Aries": "mars",
+    "Taurus": "venus",
+    "Gemini": "mercury",
+    "Cancer": "moon",
+    "Leo": "sun",
+    "Virgo": "mercury",
+    "Libra": "venus",
+    "Scorpio": "mars",
+    "Sagittarius": "jupiter",
+    "Capricorn": "saturn",
+    "Aquarius": "saturn",
+    "Pisces": "jupiter",
 }
 
 
@@ -83,19 +152,58 @@ def _get_nakshatra_pada(longitude: float) -> int:
 
 
 TITHI_NAMES = [
-    "Prathama", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
-    "Shashti", "Saptami", "Ashtami", "Navami", "Dashami",
-    "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Purnima",
-    "Prathama", "Dwitiya", "Tritiya", "Chaturthi", "Panchami",
-    "Shashti", "Saptami", "Ashtami", "Navami", "Dashami",
-    "Ekadashi", "Dwadashi", "Trayodashi", "Chaturdashi", "Amavasya",
+    "Prathama",
+    "Dwitiya",
+    "Tritiya",
+    "Chaturthi",
+    "Panchami",
+    "Shashti",
+    "Saptami",
+    "Ashtami",
+    "Navami",
+    "Dashami",
+    "Ekadashi",
+    "Dwadashi",
+    "Trayodashi",
+    "Chaturdashi",
+    "Purnima",
+    "Prathama",
+    "Dwitiya",
+    "Tritiya",
+    "Chaturthi",
+    "Panchami",
+    "Shashti",
+    "Saptami",
+    "Ashtami",
+    "Navami",
+    "Dashami",
+    "Ekadashi",
+    "Dwadashi",
+    "Trayodashi",
+    "Chaturdashi",
+    "Amavasya",
 ]
 
 KARANA_NAMES = [
-    "Kimstughna", "Bava", "Balava", "Kaulava", "Taitila",
-    "Garija", "Vanija", "Visti", "Bava", "Balava",
-    "Kaulava", "Taitila", "Garija", "Vanija", "Visti",
-    "Shakuni", "Chatushpada", "Naga", "Kimstughna",
+    "Kimstughna",
+    "Bava",
+    "Balava",
+    "Kaulava",
+    "Taitila",
+    "Garija",
+    "Vanija",
+    "Visti",
+    "Bava",
+    "Balava",
+    "Kaulava",
+    "Taitila",
+    "Garija",
+    "Vanija",
+    "Visti",
+    "Shakuni",
+    "Chatushpada",
+    "Naga",
+    "Kimstughna",
 ]
 
 
@@ -119,7 +227,15 @@ def _calculate_panchanga(
     tithi_name = TITHI_NAMES[tithi_idx]
 
     # Vara (weekday)
-    vara_names_list = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    vara_names_list = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+    ]
     vara = vara_names_list[weekday % 7]
 
     # Nakshatra
@@ -129,12 +245,33 @@ def _calculate_panchanga(
     yoga_val = (sun_longitude + moon_longitude) % 360
     yoga_idx = int(yoga_val / 13.3333333) % 27
     yoga_names_list = [
-        "Vishkumbha", "Priti", "Ayushman", "Saubhagya", "Shobhana",
-        "Atiganda", "Sukarma", "Dhriti", "Shula", "Ganda",
-        "Vriddhi", "Dhruva", "Vyaghata", "Harshana", "Vajra",
-        "Siddhi", "Vyatipata", "Variyana", "Parigha", "Shiva",
-        "Siddha", "Sadhya", "Shubha", "Shukla", "Brahma",
-        "Indra", "Vaidhriti",
+        "Vishkumbha",
+        "Priti",
+        "Ayushman",
+        "Saubhagya",
+        "Shobhana",
+        "Atiganda",
+        "Sukarma",
+        "Dhriti",
+        "Shula",
+        "Ganda",
+        "Vriddhi",
+        "Dhruva",
+        "Vyaghata",
+        "Harshana",
+        "Vajra",
+        "Siddhi",
+        "Vyatipata",
+        "Variyana",
+        "Parigha",
+        "Shiva",
+        "Siddha",
+        "Sadhya",
+        "Shubha",
+        "Shukla",
+        "Brahma",
+        "Indra",
+        "Vaidhriti",
     ]
     yoga = yoga_names_list[yoga_idx]
 
@@ -200,9 +337,7 @@ class PlanetarySnapshotOutput(BaseModel):
 
 
 def _chart_to_snapshot(chart: EphemerisServiceChartResponse) -> PlanetarySnapshotOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     asc_nakshatra, asc_pada, _ = _get_nakshatra(asc_sidereal)
 
     planets = []
@@ -231,17 +366,13 @@ def _chart_to_snapshot(chart: EphemerisServiceChartResponse) -> PlanetarySnapsho
         for i, cusp in enumerate(chart.houses.house_cusps_sidereal):
             sign = _get_sign(cusp)
             lord = SIGN_LORDS.get(sign, "")
-            houses.append(
-                HouseInfo(house_number=i + 1, sign=sign, lord=lord)
-            )
+            houses.append(HouseInfo(house_number=i + 1, sign=sign, lord=lord))
     elif chart.houses.house_cusps_tropical:
         for i, cusp in enumerate(chart.houses.house_cusps_tropical):
             sidereal_cusp = _sidereal_longitude(cusp, chart.ayanamsha)
             sign = _get_sign(sidereal_cusp)
             lord = SIGN_LORDS.get(sign, "")
-            houses.append(
-                HouseInfo(house_number=i + 1, sign=sign, lord=lord)
-            )
+            houses.append(HouseInfo(house_number=i + 1, sign=sign, lord=lord))
 
     return PlanetarySnapshotOutput(
         timestamp_utc=chart.timestamp_utc,
@@ -337,9 +468,7 @@ async def tool_get_sign_and_nakshatra(
     finally:
         await client.close()
 
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
 
     planets: dict[str, ZodiacDetail] = {}
     nakshatras: dict[str, NakshatraDetail] = {}
@@ -358,7 +487,9 @@ async def tool_get_sign_and_nakshatra(
         )
 
     asc_nakshatra, asc_pada, asc_lord = _get_nakshatra(asc_sidereal)
-    moon_nakshatra = nakshatras.get("moon", NakshatraDetail(name="", pada=0, lord="", longitude=0))
+    moon_nakshatra = nakshatras.get(
+        "moon", NakshatraDetail(name="", pada=0, lord="", longitude=0)
+    )
 
     return SignNakshatraOutput(
         timestamp_utc=chart.timestamp_utc,
@@ -432,6 +563,7 @@ async def tool_get_panchanga(input_data: PanchangaInput) -> PanchangaOutput:
 
     # Determine weekday from timestamp_utc
     from datetime import datetime
+
     dt = datetime.fromisoformat(input_data.timestamp_utc.replace("Z", "+00:00"))
     weekday = dt.weekday()
     # Python weekday: Monday=0, Sunday=6.  Vedic: Sunday=0.

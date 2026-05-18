@@ -51,7 +51,12 @@ async def forensic_filter_node(state: BTRState) -> dict[str, Any]:
     surviving = [best] if best and best_score >= MIN_SCORE else []
     eliminated = [c for c in candidates if c is not best]
 
-    log.info("forensic_filter_complete", total=len(candidates), best_score=best_score, approved=bool(best))
+    log.info(
+        "forensic_filter_complete",
+        total=len(candidates),
+        best_score=best_score,
+        approved=bool(best),
+    )
 
     return {
         "candidates": surviving,
@@ -89,7 +94,11 @@ async def _evaluate_forensic(
         )
         _kp = await tool_get_kp_sublords(kp_input)
     except Exception as exc:
-        log.warning("forensic_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100])
+        log.warning(
+            "forensic_tool_failed",
+            candidate=candidate.candidate_key,
+            error=str(exc)[:100],
+        )
         return AgentVerdict(
             candidate_id=candidate.candidate_key or candidate.time,
             score=50.0,
@@ -118,26 +127,31 @@ async def _evaluate_forensic(
         )
 
 
-def _build_forensic_user_message(candidate: CandidateDataPackage, events: list[LifeEvent]) -> str:
+def _build_forensic_user_message(
+    candidate: CandidateDataPackage, events: list[LifeEvent]
+) -> str:
     return (
-        f'{{\n'
+        f"{{\n"
         f'  "candidate_id": "{candidate.candidate_key or candidate.time}",\n'
         f'  "d60_sign": "{candidate.d60_sign or "N/A"}",\n'
         f'  "d150_sign": "{candidate.d150_sign or "N/A"}",\n'
         f'  "ascendant": "{candidate.ascendant.sign if candidate.ascendant else "N/A"} {candidate.ascendant.degree if candidate.ascendant else "N/A"}",\n'
         f'  "moon_nakshatra": "{candidate.moon_nakshatra or "N/A"}",\n'
         f'  "event_count": {len(events)}\n'
-        f'}}'
+        f"}}"
     )
 
 
-def _parse_agent_verdict(raw_content: str, candidate: CandidateDataPackage) -> AgentVerdict:
+def _parse_agent_verdict(
+    raw_content: str, candidate: CandidateDataPackage
+) -> AgentVerdict:
     try:
         data = json.loads(raw_content)
         return AgentVerdict.model_validate(data)
     except (json.JSONDecodeError, Exception) as exc:
         log.warning("forensic_verdict_parse_fallback", error=str(exc)[:100])
         from app.agents.structured_output import parse_agent_verdict_xml
+
         verdicts = parse_agent_verdict_xml(raw_content)
         if verdicts:
             return verdicts[0]

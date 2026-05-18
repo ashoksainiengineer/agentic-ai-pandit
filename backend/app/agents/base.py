@@ -36,20 +36,16 @@ class LLMResponse:
     latency_ms: float = 0.0
 
 
-class LLMProviderError(Exception):
-    ...
+class LLMProviderError(Exception): ...
 
 
-class LLMProviderRateLimitError(LLMProviderError):
-    ...
+class LLMProviderRateLimitError(LLMProviderError): ...
 
 
-class LLMProviderAuthError(LLMProviderError):
-    ...
+class LLMProviderAuthError(LLMProviderError): ...
 
 
-class LLMProviderTimeoutError(LLMProviderError):
-    ...
+class LLMProviderTimeoutError(LLMProviderError): ...
 
 
 @runtime_checkable
@@ -78,7 +74,8 @@ def _build_lc_messages(
 
     lc_messages: list[Any] = [SystemMessage(content=system_prompt)]
     lc_messages.extend(
-        HumanMessage(content=m["content"]) if m["role"] == "user"
+        HumanMessage(content=m["content"])
+        if m["role"] == "user"
         else SystemMessage(content=m["content"])
         for m in messages
     )
@@ -150,7 +147,9 @@ class VertexAIAdapter:
                 result = await structured_llm.ainvoke(lc_messages)
                 latency = (time.monotonic() - t0) * 1000
                 return LLMResponse(
-                    content=result.model_dump_json() if isinstance(result, BaseModel) else str(result),
+                    content=result.model_dump_json()
+                    if isinstance(result, BaseModel)
+                    else str(result),
                     model=self.model_name,
                     latency_ms=round(latency, 1),
                 )
@@ -367,7 +366,5 @@ class TokenTracker:
 
     @staticmethod
     def _compute_cost(model: str, prompt: int, completion: int) -> float:
-        prompt_cost, completion_cost = MODEL_COST_PER_1M_TOKENS.get(
-            model, DEFAULT_COST
-        )
+        prompt_cost, completion_cost = MODEL_COST_PER_1M_TOKENS.get(model, DEFAULT_COST)
         return (prompt * prompt_cost + completion * completion_cost) / 1_000_000

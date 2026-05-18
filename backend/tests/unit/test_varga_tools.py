@@ -75,9 +75,18 @@ class TestD150Sign:
         sign = _calculate_d150_sign(0.0)
         assert isinstance(sign, str)
         assert sign in [
-            "Aries", "Taurus", "Gemini", "Cancer",
-            "Leo", "Virgo", "Libra", "Scorpio",
-            "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+            "Aries",
+            "Taurus",
+            "Gemini",
+            "Cancer",
+            "Leo",
+            "Virgo",
+            "Libra",
+            "Scorpio",
+            "Sagittarius",
+            "Capricorn",
+            "Aquarius",
+            "Pisces",
         ]
 
 
@@ -236,6 +245,7 @@ class TestInputValidation:
 
     def test_boundary_changes_input_invalid_sweep(self) -> None:
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             BoundaryChangesInput(
                 timestamp_utc="2024-06-16T10:30:00Z",
@@ -247,6 +257,7 @@ class TestInputValidation:
 
     def test_boundary_changes_input_invalid_step(self) -> None:
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             BoundaryChangesInput(
                 timestamp_utc="2024-06-16T10:30:00Z",

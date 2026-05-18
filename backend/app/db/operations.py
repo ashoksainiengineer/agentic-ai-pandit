@@ -50,6 +50,7 @@ def _maybe_utc(ts: datetime | None) -> datetime | None:
 # Session CRUD
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CreateSessionInput:
     user_id: str
@@ -149,6 +150,7 @@ async def clone_session(db: AsyncSession, session_id: str) -> Session | None:
 # User CRUD
 # ---------------------------------------------------------------------------
 
+
 async def get_user_by_id(db: AsyncSession, user_id: str) -> User | None:
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalar_one_or_none()
@@ -162,6 +164,7 @@ async def get_user_by_external_id(db: AsyncSession, external_id: str) -> User | 
 # ---------------------------------------------------------------------------
 # Job CRUD
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CreateJobInput:
@@ -459,6 +462,7 @@ async def increment_job_attempt(db: AsyncSession, job_id: str) -> Job | None:
 # Job Attempt CRUD
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CreateJobAttemptInput:
     id: str
@@ -534,6 +538,7 @@ async def complete_job_attempt(
 # Job Event CRUD (with sequence collision retry)
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CreateJobEventInput:
     id: str
@@ -545,9 +550,7 @@ class CreateJobEventInput:
     stage: str | None = None
 
 
-async def append_job_event(
-    db: AsyncSession, input: CreateJobEventInput
-) -> JobEvent:
+async def append_job_event(db: AsyncSession, input: CreateJobEventInput) -> JobEvent:
     """Insert a job event, retrying on sequence-number collision (unique
     constraint violation on ``(job_id, sequence_no)``).
 
@@ -609,9 +612,7 @@ async def list_job_events_since(
 ) -> list[JobEvent]:
     result = await db.execute(
         select(JobEvent)
-        .where(
-            and_(JobEvent.job_id == job_id, JobEvent.sequence_no > sequence_no)
-        )
+        .where(and_(JobEvent.job_id == job_id, JobEvent.sequence_no > sequence_no))
         .order_by(JobEvent.sequence_no)
         .limit(limit)
     )
@@ -621,6 +622,7 @@ async def list_job_events_since(
 # ---------------------------------------------------------------------------
 # Artifact CRUD
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class CreateArtifactInput:
@@ -680,6 +682,7 @@ async def get_latest_artifact_for_job_by_kind(
 # Idempotency Key CRUD
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CreateIdempotencyKeyInput:
     id: str
@@ -725,6 +728,7 @@ async def get_idempotency_key(
 # ---------------------------------------------------------------------------
 # Session Favorites
 # ---------------------------------------------------------------------------
+
 
 async def add_session_favorite(
     db: AsyncSession, user_id: str, session_id: str

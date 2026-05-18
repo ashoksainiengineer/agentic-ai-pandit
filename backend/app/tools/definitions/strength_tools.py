@@ -93,14 +93,29 @@ BENEFIC_PLANETS: set[str] = {"jupiter", "venus"}
 MALEFIC_PLANETS: set[str] = {"saturn", "mars", "sun"}
 
 BAV_PLANET_ORDER: list[str] = [
-    "sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn",
+    "sun",
+    "moon",
+    "mars",
+    "mercury",
+    "jupiter",
+    "venus",
+    "saturn",
 ]
 
 BAV_CONTRIBUTORS: dict[str, list[str]] = {
     "sun": ["sun", "moon", "mars", "jupiter", "saturn"],
     "moon": ["sun", "moon", "mars", "jupiter", "saturn"],
     "mars": ["sun", "moon", "mars", "jupiter", "saturn"],
-    "mercury": ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn", "ascendant"],
+    "mercury": [
+        "sun",
+        "moon",
+        "mars",
+        "mercury",
+        "jupiter",
+        "venus",
+        "saturn",
+        "ascendant",
+    ],
     "jupiter": ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn"],
     "venus": ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn"],
     "saturn": ["sun", "moon", "mars", "mercury", "jupiter", "venus", "saturn"],
@@ -140,7 +155,10 @@ def _build_planet_positions(chart: EphemerisServiceChartResponse) -> dict[str, f
 def _get_sidereal_cusps(chart: EphemerisServiceChartResponse) -> list[float]:
     if chart.houses.house_cusps_sidereal:
         return chart.houses.house_cusps_sidereal
-    return [_sidereal_longitude(c, chart.ayanamsha) for c in chart.houses.house_cusps_tropical]
+    return [
+        _sidereal_longitude(c, chart.ayanamsha)
+        for c in chart.houses.house_cusps_tropical
+    ]
 
 
 def _are_in_aspect(p1_sign_idx: int, p2_sign_idx: int, p1_name: str) -> bool:
@@ -211,7 +229,12 @@ def _calculate_kala_bala(
 
     moon_sun_distance = (moon_longitude - sun_longitude) % 360
     is_waxing = moon_sun_distance < 180
-    if is_waxing and planet in {"moon", "venus", "jupiter", "mercury"} or not is_waxing and planet in {"sun", "mars", "saturn"}:
+    if (
+        is_waxing
+        and planet in {"moon", "venus", "jupiter", "mercury"}
+        or not is_waxing
+        and planet in {"sun", "mars", "saturn"}
+    ):
         base = min(1.0, base + 0.1)
 
     return round(base, 4)
@@ -301,9 +324,7 @@ def _get_kp_hierarchy(longitude: float) -> dict[str, str]:
     sub_sub_lord, pos_in_sub_sub, sub_sub_size = _get_sub_lord(
         pos_in_sub, sub_lord, sub_size
     )
-    sub_sub_sub_lord, _, _ = _get_sub_lord(
-        pos_in_sub_sub, sub_sub_lord, sub_sub_size
-    )
+    sub_sub_sub_lord, _, _ = _get_sub_lord(pos_in_sub_sub, sub_sub_lord, sub_sub_size)
 
     return {
         "star_lord": star_lord,
@@ -344,9 +365,7 @@ class ShadbalaOutput(BaseModel):
 
 def _compute_shadbala(chart: EphemerisServiceChartResponse) -> ShadbalaOutput:
     """Compute six-fold planetary strength for all planets in the chart."""
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     planet_positions = _build_planet_positions(chart)
 
     sun_lon = planet_positions.get("sun", 0.0)
@@ -498,8 +517,7 @@ def _compute_ashtakavarga(
         )
 
     sav_out = [
-        AshtakavargaSignOut(sign=ZODIAC_SIGNS[i], points=sav[i])
-        for i in range(12)
+        AshtakavargaSignOut(sign=ZODIAC_SIGNS[i], points=sav[i]) for i in range(12)
     ]
 
     return bav_results, sav_out
@@ -523,9 +541,7 @@ async def tool_get_ashtakavarga(input_data: AshtakavargaInput) -> AshtakavargaOu
         await client.close()
 
     planet_positions = _build_planet_positions(chart)
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     bav, sav = _compute_ashtakavarga(planet_positions, asc_sidereal)
 
     return AshtakavargaOutput(

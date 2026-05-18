@@ -177,7 +177,9 @@ class JobWorker:
 
             await self._event_store.write_event(
                 job_id,
-                JobEvent("progress", {"message": "Session loaded", "progress_percent": 5}),
+                JobEvent(
+                    "progress", {"message": "Session loaded", "progress_percent": 5}
+                ),
             )
 
             # ---- 3. Parse birth data ----
@@ -396,7 +398,11 @@ class JobWorker:
         import json
 
         try:
-            raw = json.loads(session.life_events) if isinstance(session.life_events, str) else session.life_events
+            raw = (
+                json.loads(session.life_events)
+                if isinstance(session.life_events, str)
+                else session.life_events
+            )
             if isinstance(raw, list):
                 return [LifeEvent(**evt) for evt in raw]
             return []
@@ -422,9 +428,15 @@ class JobWorker:
 
         try:
             base_dt_str = f"{birth_data.date_of_birth}T{birth_data.tentative_time}"
-            tz_offset = birth_data.timezone if isinstance(birth_data.timezone, (int, float)) else 0
+            tz_offset = (
+                birth_data.timezone
+                if isinstance(birth_data.timezone, (int, float))
+                else 0
+            )
             tz = timezone(timedelta(hours=tz_offset))
-            base_dt = datetime.strptime(base_dt_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=tz)
+            base_dt = datetime.strptime(base_dt_str, "%Y-%m-%dT%H:%M:%S").replace(
+                tzinfo=tz
+            )
             base_utc = base_dt.astimezone(UTC)
         except (ValueError, TypeError) as exc:
             _log.warning("candidate_gen_time_parse_fail", error=str(exc)[:200])
@@ -445,7 +457,7 @@ class JobWorker:
                 candidate_key=f"offset_{offset:+d}",
                 candidate_date=candidate_time.strftime("%Y-%m-%d"),
                 planets={},
-                    ascendant=Ascendant(sign="Unknown", degree="0.0"),
+                ascendant=Ascendant(sign="Unknown", degree="0.0"),
                 house_lords={},
                 moon_nakshatra="",
                 vimshottari_dasha=[],
@@ -467,8 +479,15 @@ class JobWorker:
         error_message: str,
     ) -> None:
         """Mark the job as failed and record the error."""
-        await fail_job(db, FailJobInput(job_id=job_id, error_code=error_code, error_message=error_message))
-        await self._event_store.write_error(job_id, error_message, error_code=error_code)
+        await fail_job(
+            db,
+            FailJobInput(
+                job_id=job_id, error_code=error_code, error_message=error_message
+            ),
+        )
+        await self._event_store.write_error(
+            job_id, error_message, error_code=error_code
+        )
         log.warning("job_failed", job_id=job_id, error_code=error_code)
 
 

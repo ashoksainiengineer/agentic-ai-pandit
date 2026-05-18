@@ -231,6 +231,7 @@ class TestInputValidation:
 
     def test_vimshottari_input_level_range(self) -> None:
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             VimshottariDashaInput(
                 timestamp_utc="2024-06-16T10:30:00Z",

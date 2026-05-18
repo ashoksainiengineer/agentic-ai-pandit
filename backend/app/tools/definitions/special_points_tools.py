@@ -58,7 +58,9 @@ def _calculate_hora_lagna(lagna_longitude: float, hours_since_sunrise: float) ->
     return (lagna_longitude + hours_since_sunrise * 15.0) % 360.0
 
 
-def _calculate_ghati_lagna(lagna_longitude: float, minutes_since_sunrise: float) -> float:
+def _calculate_ghati_lagna(
+    lagna_longitude: float, minutes_since_sunrise: float
+) -> float:
     return (lagna_longitude + minutes_since_sunrise * 1.25) % 360.0
 
 
@@ -108,7 +110,9 @@ class SpecialPointsOutput(BaseModel):
     special_points: list[SpecialPointOut]
 
 
-async def tool_get_special_points(input_data: SpecialPointsInput) -> SpecialPointsOutput:
+async def tool_get_special_points(
+    input_data: SpecialPointsInput,
+) -> SpecialPointsOutput:
     client = EphemerisClient()
     try:
         request = EphemerisServiceSingleRequest(
@@ -124,12 +128,12 @@ async def tool_get_special_points(input_data: SpecialPointsInput) -> SpecialPoin
     finally:
         await client.close()
 
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     planet_positions: dict[str, float] = {}
     for p in chart.planets:
-        planet_positions[p.body] = _sidereal_longitude(p.tropical_longitude, chart.ayanamsha)
+        planet_positions[p.body] = _sidereal_longitude(
+            p.tropical_longitude, chart.ayanamsha
+        )
 
     moon_lon = planet_positions.get("moon", 0.0)
     rahu_lon = planet_positions.get("rahu", 0.0)

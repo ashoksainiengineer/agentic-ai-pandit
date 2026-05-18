@@ -67,7 +67,9 @@ async def _evaluate_varga(
         )
         _varga_result = await tool_get_divisional_charts(varga_input)
     except Exception as exc:
-        log.warning("varga_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100])
+        log.warning(
+            "varga_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100]
+        )
         return AgentVerdict(
             candidate_id=candidate.candidate_key or candidate.time,
             score=40.0,
@@ -96,43 +98,50 @@ async def _evaluate_varga(
         )
 
 
-def _build_varga_user_message(candidate: CandidateDataPackage, events: list[LifeEvent]) -> str:
-    d9 = f'D9 Lagna: {candidate.d9_lagna or "N/A"}'
-    d10 = f'D10 Lagna: {candidate.d10_lagna or "N/A"}'
-    d60 = f'D60 sign: {candidate.d60_sign or "N/A"}'
+def _build_varga_user_message(
+    candidate: CandidateDataPackage, events: list[LifeEvent]
+) -> str:
+    d9 = f"D9 Lagna: {candidate.d9_lagna or 'N/A'}"
+    d10 = f"D10 Lagna: {candidate.d10_lagna or 'N/A'}"
+    d60 = f"D60 sign: {candidate.d60_sign or 'N/A'}"
 
     career_events = "\n".join(
         f"  {e.event_type} ({e.event_date})"
-        for e in events[:5] if e.category.value == "career"
+        for e in events[:5]
+        if e.category.value == "career"
     )
     marriage_events = "\n".join(
         f"  {e.event_type} ({e.event_date})"
-        for e in events[:5] if e.category.value == "marriage"
+        for e in events[:5]
+        if e.category.value == "marriage"
     )
 
     return (
-        f'{{\n'
+        f"{{\n"
         f'  "candidate_id": "{candidate.candidate_key or candidate.time}",\n'
         f'  "{d9}",\n'
         f'  "{d10}",\n'
         f'  "{d60}",\n'
         f'  "career_events": [\n'
-        f'{career_events or "  (none)"}\n'
-        f'  ],\n'
+        f"{career_events or '  (none)'}\n"
+        f"  ],\n"
         f'  "marriage_events": [\n'
-        f'{marriage_events or "  (none)"}\n'
-        f'  ]\n'
-        f'}}'
+        f"{marriage_events or '  (none)'}\n"
+        f"  ]\n"
+        f"}}"
     )
 
 
-def _parse_agent_verdict(raw_content: str, candidate: CandidateDataPackage) -> AgentVerdict:
+def _parse_agent_verdict(
+    raw_content: str, candidate: CandidateDataPackage
+) -> AgentVerdict:
     try:
         data = json.loads(raw_content)
         return AgentVerdict.model_validate(data)
     except (json.JSONDecodeError, Exception) as exc:
         log.warning("varga_verdict_parse_fallback", error=str(exc)[:100])
         from app.agents.structured_output import parse_agent_verdict_xml
+
         verdicts = parse_agent_verdict_xml(raw_content)
         if verdicts:
             return verdicts[0]

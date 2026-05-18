@@ -167,7 +167,9 @@ class ToolCache:
     Degrades gracefully — Redis failures log a warning and return miss.
     """
 
-    def __init__(self, max_memory_items: int = 256, redis_client: AsyncRedis[Any] | None = None) -> None:
+    def __init__(
+        self, max_memory_items: int = 256, redis_client: AsyncRedis[Any] | None = None
+    ) -> None:
         self._max_memory = max_memory_items
         self._mem: OrderedDict[str, CacheEntry] = OrderedDict()
         self._redis: AsyncRedis[Any] | None = redis_client
@@ -185,7 +187,9 @@ class ToolCache:
 
     # ── public ─────────────────────────────────────────────
 
-    async def get(self, tool_name: str, kwargs: dict[str, Any], ttl: int) -> bytes | None:
+    async def get(
+        self, tool_name: str, kwargs: dict[str, Any], ttl: int
+    ) -> bytes | None:
         key = self._make_key(tool_name, kwargs)
 
         # In-memory check
@@ -200,14 +204,18 @@ class ToolCache:
             try:
                 val: bytes | None = await self._redis.get(key)
                 if val is not None:
-                    self._put_mem(key, CacheEntry(value=val, created_at=time.monotonic()))
+                    self._put_mem(
+                        key, CacheEntry(value=val, created_at=time.monotonic())
+                    )
                     return val
             except Exception:
                 log.warning("cache_redis_get_failed", tool=tool_name, exc_info=True)
 
         return None
 
-    async def set(self, tool_name: str, kwargs: dict[str, Any], value: bytes, ttl: int) -> None:
+    async def set(
+        self, tool_name: str, kwargs: dict[str, Any], value: bytes, ttl: int
+    ) -> None:
         key = self._make_key(tool_name, kwargs)
         now = time.monotonic()
 
@@ -351,9 +359,7 @@ class ToolRegistry:
             result = await self._execute_with_retry(fn, spec, validated_input)
         except Exception as exc:
             breaker.record_failure()
-            raise ToolExecutionError(
-                f"Tool '{name}' execution failed: {exc}"
-            ) from exc
+            raise ToolExecutionError(f"Tool '{name}' execution failed: {exc}") from exc
 
         # 5. Cache success
         try:

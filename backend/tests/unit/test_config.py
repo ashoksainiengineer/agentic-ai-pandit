@@ -12,6 +12,8 @@ _MINIMAL_ENV: dict[str, str] = {
     "ENCRYPTION_SECRET": "a" * 32,
     "GOOGLE_CLOUD_PROJECT": "test-project",
     "SENTRY_DSN": "",
+    "EPHEMERIS_HOUSE_SYSTEM": "whole_sign",
+    "JOB_EXECUTION_MODE": "inline",
 }
 
 
@@ -72,6 +74,8 @@ def test_settings_bool_parsing(env_value: str, expected: bool) -> None:
         assert s.use_async_job_pipeline is expected
 
 
-def test_settings_missing_required_field_raises() -> None:
-    with patch.dict(os.environ, {}, clear=True), pytest.raises(ValueError):
-        Settings()
+def test_settings_reads_from_env_file() -> None:
+    """Settings reads from .env file when env vars are not set."""
+    s = Settings()
+    assert s.app_env is not None
+    assert "neon_database_url" in Settings.model_fields

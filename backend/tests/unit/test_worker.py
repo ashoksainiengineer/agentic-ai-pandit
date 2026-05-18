@@ -35,16 +35,20 @@ class TestJobSubmission:
 
 class TestBuildBirthData:
     def test_full_data(self, worker: JobWorker) -> None:
-        session = type("Session", (), {
-            "full_name": "Test User",
-            "date_of_birth": "1990-06-15",
-            "tentative_time": "14:30:00",
-            "birth_place": "Mumbai",
-            "latitude": 19.076,
-            "longitude": 72.8777,
-            "timezone": 5.5,
-            "gender": "male",
-        })()
+        session = type(
+            "Session",
+            (),
+            {
+                "full_name": "Test User",
+                "date_of_birth": "1990-06-15",
+                "tentative_time": "14:30:00",
+                "birth_place": "Mumbai",
+                "latitude": 19.076,
+                "longitude": 72.8777,
+                "timezone": 5.5,
+                "gender": "male",
+            },
+        )()
         bd = worker._build_birth_data(session)
         assert bd.full_name == "Test User"
         assert bd.date_of_birth == "1990-06-15"
@@ -56,12 +60,20 @@ class TestBuildBirthData:
         assert bd.gender == "male"
 
     def test_null_gender(self, worker: JobWorker) -> None:
-        session = type("Session", (), {
-            "full_name": "T", "date_of_birth": "2000-01-01",
-            "tentative_time": "12:00:00", "birth_place": "X",
-            "latitude": 0.0, "longitude": 0.0,
-            "timezone": 0, "gender": None,
-        })()
+        session = type(
+            "Session",
+            (),
+            {
+                "full_name": "T",
+                "date_of_birth": "2000-01-01",
+                "tentative_time": "12:00:00",
+                "birth_place": "X",
+                "latitude": 0.0,
+                "longitude": 0.0,
+                "timezone": 0,
+                "gender": None,
+            },
+        )()
         bd = worker._build_birth_data(session)
         assert bd.gender is None
 
@@ -78,21 +90,23 @@ class TestParseLifeEvents:
         assert events == []
 
     def test_valid_json_array(self, worker: JobWorker) -> None:
-        session = type("Session", (), {"life_events": '[]'})()
+        session = type("Session", (), {"life_events": "[]"})()
         events = worker._parse_life_events(session)
         assert events == []
 
     def test_parses_life_events(self, worker: JobWorker) -> None:
-        json_str = json.dumps([
-            {
-                "category": "career",
-                "event_type": "Job start",
-                "date_precision": "exact_date",
-                "event_date": "2015-03-01",
-                "description": "Started first job",
-                "importance": "high",
-            }
-        ])
+        json_str = json.dumps(
+            [
+                {
+                    "category": "career",
+                    "event_type": "Job start",
+                    "date_precision": "exact_date",
+                    "event_date": "2015-03-01",
+                    "description": "Started first job",
+                    "importance": "high",
+                }
+            ]
+        )
         session = type("Session", (), {"life_events": json_str})()
         events = worker._parse_life_events(session)
         assert len(events) == 1
@@ -137,10 +151,14 @@ class TestGenerateCandidates:
         from app.models.events import BirthData
 
         bd = BirthData(
-            full_name="T", date_of_birth="2000-01-01",
-            tentative_time="12:00:00", birth_place="X",
-            latitude=0.0, longitude=0.0,
-            timezone=0, gender=None,
+            full_name="T",
+            date_of_birth="2000-01-01",
+            tentative_time="12:00:00",
+            birth_place="X",
+            latitude=0.0,
+            longitude=0.0,
+            timezone=0,
+            gender=None,
         )
         candidates = await worker._generate_candidates(bd)
         zero = [c for c in candidates if c.offset_minutes == 0]
@@ -151,10 +169,14 @@ class TestGenerateCandidates:
         from app.models.events import BirthData
 
         bd = BirthData(
-            full_name="T", date_of_birth="2000-01-01",
-            tentative_time="12:00:00", birth_place="X",
-            latitude=0.0, longitude=0.0,
-            timezone=0, gender=None,
+            full_name="T",
+            date_of_birth="2000-01-01",
+            tentative_time="12:00:00",
+            birth_place="X",
+            latitude=0.0,
+            longitude=0.0,
+            timezone=0,
+            gender=None,
         )
         candidates = await worker._generate_candidates(bd)
         c = candidates[0]
@@ -167,10 +189,14 @@ class TestGenerateCandidates:
         from app.models.events import BirthData
 
         bd = BirthData(
-            full_name="T", date_of_birth="2000-06-15",
-            tentative_time="10:30:00", birth_place="X",
-            latitude=0.0, longitude=0.0,
-            timezone=5.5, gender=None,
+            full_name="T",
+            date_of_birth="2000-06-15",
+            tentative_time="10:30:00",
+            birth_place="X",
+            latitude=0.0,
+            longitude=0.0,
+            timezone=5.5,
+            gender=None,
         )
         candidates = await worker._generate_candidates(bd)
         for c in candidates:
@@ -180,10 +206,14 @@ class TestGenerateCandidates:
         from app.models.events import BirthData
 
         bd = BirthData(
-            full_name="T", date_of_birth="2000-06-15",
-            tentative_time="10:30:00", birth_place="X",
-            latitude=0.0, longitude=0.0,
-            timezone=0, gender=None,
+            full_name="T",
+            date_of_birth="2000-06-15",
+            tentative_time="10:30:00",
+            birth_place="X",
+            latitude=0.0,
+            longitude=0.0,
+            timezone=0,
+            gender=None,
         )
         candidates = await worker._generate_candidates(bd)
         offsets = [c.offset_minutes for c in candidates]

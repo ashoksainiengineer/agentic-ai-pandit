@@ -69,7 +69,9 @@ class TestJobEventStoreWrite:
         assert payload["event"] == "progress"
         assert payload["data"]["pct"] == 50
 
-    async def test_write_error(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_write_error(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         await store.write_error("job_001", "Something broke", code=500)
         mock_redis.rpush.assert_awaited_once()
         args, _ = mock_redis.rpush.await_args
@@ -79,7 +81,9 @@ class TestJobEventStoreWrite:
         assert payload["data"]["message"] == "Something broke"
         assert payload["data"]["code"] == 500
 
-    async def test_write_stage_complete(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_write_stage_complete(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         await store.write_stage_complete("job_001", "lagna", 50.0)
         mock_redis.rpush.assert_awaited_once()
         args, _ = mock_redis.rpush.await_args
@@ -89,7 +93,9 @@ class TestJobEventStoreWrite:
         assert payload["data"]["stage"] == "lagna"
         assert payload["data"]["progress_percent"] == 50.0
 
-    async def test_write_complete(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_write_complete(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         result = {"rectified_time": "2024-01-15T10:30:00Z", "confidence": 85.0}
         await store.write_complete("job_001", result)
         mock_redis.rpush.assert_awaited_once()
@@ -101,16 +107,32 @@ class TestJobEventStoreWrite:
 
 
 class TestJobEventStoreRead:
-    async def test_read_events_empty(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_read_events_empty(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         mock_redis.lrange.return_value = []
         events = await store.read_events("job_001")
         assert events == []
         mock_redis.lrange.assert_awaited_once_with("job:job_001:log", 0, 999)
 
-    async def test_read_events_with_data(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_read_events_with_data(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         stored = [
-            json.dumps({"event": "progress", "data": {"pct": 10}, "timestamp": "2024-01-01T00:00:00Z"}),
-            json.dumps({"event": "progress", "data": {"pct": 50}, "timestamp": "2024-01-01T00:01:00Z"}),
+            json.dumps(
+                {
+                    "event": "progress",
+                    "data": {"pct": 10},
+                    "timestamp": "2024-01-01T00:00:00Z",
+                }
+            ),
+            json.dumps(
+                {
+                    "event": "progress",
+                    "data": {"pct": 50},
+                    "timestamp": "2024-01-01T00:01:00Z",
+                }
+            ),
         ]
         mock_redis.lrange.return_value = stored
         events = await store.read_events("job_001")
@@ -118,12 +140,16 @@ class TestJobEventStoreRead:
         assert events[0]["event"] == "progress"
         assert events[0]["data"]["pct"] == 10
 
-    async def test_read_events_since_seq(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_read_events_since_seq(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         mock_redis.lrange.return_value = []
         await store.read_events("job_001", since_seq=5)
         mock_redis.lrange.assert_awaited_once_with("job:job_001:log", 5, 1004)
 
-    async def test_event_count(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_event_count(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         mock_redis.llen.return_value = 3
         count = await store.event_count("job_001")
         assert count == 3
@@ -131,14 +157,17 @@ class TestJobEventStoreRead:
 
 
 class TestJobEventStoreCleanup:
-    async def test_clear_events(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_clear_events(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         await store.clear_events("job_001")
         mock_redis.delete.assert_awaited_once_with("job:job_001:log")
 
 
 class TestJobEventStoreIntegration:
-
-    async def test_write_then_read(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_write_then_read(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         stored_payloads: list[bytes] = []
 
         async def fake_rpush(_key: str, value: str) -> None:
@@ -157,14 +186,16 @@ class TestJobEventStoreIntegration:
         assert events[0]["event"] == "progress"
         assert events[0]["data"]["pct"] == 75
 
-    async def test_multiple_events(self, store: JobEventStore, mock_redis: AsyncMock) -> None:
+    async def test_multiple_events(
+        self, store: JobEventStore, mock_redis: AsyncMock
+    ) -> None:
         stored_payloads: list[bytes] = []
 
         async def fake_rpush(_key: str, value: str) -> None:
             stored_payloads.append(value.encode())
 
         async def fake_lrange(_key: str, start: int, end: int) -> list[bytes]:
-            return stored_payloads[start:end + 1]
+            return stored_payloads[start : end + 1]
 
         mock_redis.rpush.side_effect = fake_rpush
         mock_redis.lrange.side_effect = fake_lrange

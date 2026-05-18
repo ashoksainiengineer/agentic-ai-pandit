@@ -43,9 +43,7 @@ class PromptManager:
 
     def list_prompts(self) -> list[str]:
         """Return all available prompt names (without ``.md`` extension)."""
-        return sorted(
-            p.stem for p in self._dir.glob("*.md") if p.is_file()
-        )
+        return sorted(p.stem for p in self._dir.glob("*.md") if p.is_file())
 
 
 _FALLBACK_PROMPTS: dict[str, str] = {

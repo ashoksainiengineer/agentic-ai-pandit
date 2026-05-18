@@ -133,6 +133,7 @@ class TestInputValidation:
 
     def test_planetary_snapshot_input_invalid_lat(self) -> None:
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             PlanetarySnapshotInput(
                 timestamp_utc="2024-06-16T10:30:00Z",
@@ -158,6 +159,7 @@ class TestInputValidation:
 
     def test_panchanga_input_invalid_longitude(self) -> None:
         from pydantic import ValidationError
+
         with pytest.raises(ValidationError):
             PanchangaInput(
                 timestamp_utc="2024-06-16T10:30:00Z",

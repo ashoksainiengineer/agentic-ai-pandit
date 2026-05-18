@@ -36,7 +36,10 @@ class TestEngine:
     def test_create_engine_returns_async_engine(self) -> None:
         engine = create_engine("postgresql+psycopg://u:p@localhost/db")
         assert isinstance(engine, AsyncEngine)
-        assert engine.url.render_as_string(hide_password=False) == "postgresql+psycopg://u:p@localhost/db"
+        assert (
+            engine.url.render_as_string(hide_password=False)
+            == "postgresql+psycopg://u:p@localhost/db"
+        )
 
     def test_create_engine_uses_null_pool_by_default(self) -> None:
         engine = create_engine("postgresql+psycopg://u:p@localhost/db")

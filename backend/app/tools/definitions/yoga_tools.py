@@ -90,7 +90,9 @@ def _are_in_aspect(p1_sign_idx: int, p2_sign_idx: int, p1_name: str) -> bool:
     return bool(p1_name == "saturn" and diff in {2, 9})
 
 
-def _mutual_aspect(p1_sign_idx: int, p2_sign_idx: int, p1_name: str, p2_name: str) -> bool:
+def _mutual_aspect(
+    p1_sign_idx: int, p2_sign_idx: int, p1_name: str, p2_name: str
+) -> bool:
     return _are_in_aspect(p1_sign_idx, p2_sign_idx, p1_name) or _are_in_aspect(
         p2_sign_idx, p1_sign_idx, p2_name
     )
@@ -198,8 +200,12 @@ def _detect_raja_yoga(
                 )
 
     # Type 2: Kendra lord conjunct with trikona lord
-    kendra_lords = {lord for h, lord in enumerate(house_lords, start=1) if h in KENDRA_HOUSES}
-    trikona_lords = {lord for h, lord in enumerate(house_lords, start=1) if h in TRIKONA_HOUSES}
+    kendra_lords = {
+        lord for h, lord in enumerate(house_lords, start=1) if h in KENDRA_HOUSES
+    }
+    trikona_lords = {
+        lord for h, lord in enumerate(house_lords, start=1) if h in TRIKONA_HOUSES
+    }
 
     for kl in kendra_lords:
         for tl in trikona_lords:
@@ -231,7 +237,7 @@ def _detect_dharma_karmadhipati(
 ) -> list[DetectedYoga]:
     """Detect Dharma-Karmadhipati Yoga — 9th and 10th lord connection."""
     yogas: list[DetectedYoga] = []
-    lord_9 = house_lords[8]   # house 9
+    lord_9 = house_lords[8]  # house 9
     lord_10 = house_lords[9]  # house 10
 
     if lord_9 == lord_10:
@@ -291,9 +297,7 @@ def _detect_dharma_karmadhipati(
 
 
 def _calculate_yogas(chart: EphemerisServiceChartResponse) -> YogaOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     asc_sign = _get_sign(asc_sidereal)
     planet_positions = _build_planet_positions(chart)
     house_lords = _get_house_lords(asc_sign)
@@ -375,10 +379,10 @@ MAHA_PURUSHA_PLANETS: dict[str, str] = {
 }
 
 
-def _detect_maha_purusha_yogas(chart: EphemerisServiceChartResponse) -> MahaPurushaYogaOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+def _detect_maha_purusha_yogas(
+    chart: EphemerisServiceChartResponse,
+) -> MahaPurushaYogaOutput:
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     asc_sign = _get_sign(asc_sidereal)
     asc_idx = _sign_index(asc_sign)
     planet_positions = _build_planet_positions(chart)

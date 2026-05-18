@@ -65,7 +65,9 @@ class EphemerisServiceHouses(BaseModel):
     mc_tropical: float
     house_cusps_tropical: list[float] = Field(min_length=12, max_length=12)
     ascendant_sidereal: float | None = None
-    house_cusps_sidereal: list[float] | None = Field(default=None, min_length=12, max_length=12)
+    house_cusps_sidereal: list[float] | None = Field(
+        default=None, min_length=12, max_length=12
+    )
 
 
 class EphemerisServiceChartResponse(BaseModel):
@@ -171,6 +173,7 @@ class EphemerisClient:
                     wait = attempt * 1.0  # 1s, 2s backoff
                     self._log.info("ephemeris_retry", attempt=attempt, path=path)
                     import asyncio
+
                     await asyncio.sleep(wait)
 
                 response = await self._client.request(
@@ -218,7 +221,9 @@ class EphemerisClient:
 
     # ── public ──
 
-    async def fetch_chart(self, request: EphemerisServiceSingleRequest) -> EphemerisServiceChartResponse:
+    async def fetch_chart(
+        self, request: EphemerisServiceSingleRequest
+    ) -> EphemerisServiceChartResponse:
         """Fetch a single ephemeris chart."""
         batch_request = EphemerisServiceBatchRequest(
             location=request.location,
@@ -232,7 +237,9 @@ class EphemerisClient:
             raise EphemerisServiceError("Ephemeris batch response contained no charts")
         return batch.charts[0]
 
-    async def fetch_charts_batch(self, request: EphemerisServiceBatchRequest) -> EphemerisServiceBatchResponse:
+    async def fetch_charts_batch(
+        self, request: EphemerisServiceBatchRequest
+    ) -> EphemerisServiceBatchResponse:
         """Fetch ephemeris charts for multiple timestamps (POST /v1/positions/batch)."""
         batch_size = len(request.timestamps_utc)
         timeout_s = max(30.0, batch_size * 0.2)  # ~200 ms per chart, min 30 s
@@ -244,7 +251,9 @@ class EphemerisClient:
         )
         return EphemerisServiceBatchResponse.model_validate(data)
 
-    async def fetch_sunrise(self, request: EphemerisServiceSunriseRequest) -> EphemerisServiceSunriseResponse:
+    async def fetch_sunrise(
+        self, request: EphemerisServiceSunriseRequest
+    ) -> EphemerisServiceSunriseResponse:
         """Fetch sunrise time (POST /v1/sunrise)."""
         data = await self._request_json(
             "POST",

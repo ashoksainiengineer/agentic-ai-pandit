@@ -95,7 +95,9 @@ async def submit_rectification(
         if worker is not None:
             from app.queue.worker import JobSubmission
 
-            await worker.submit(JobSubmission(job_id=job.id, session_id=body.session_id))
+            await worker.submit(
+                JobSubmission(job_id=job.id, session_id=body.session_id)
+            )
             log.info(
                 "rectification_dispatched",
                 job_id=job_id,
@@ -221,7 +223,9 @@ async def cancel_rectification(
 
     cancelled_job = await request_job_cancellation(db, job.id)
     if cancelled_job is None:
-        raise HTTPException(status_code=409, detail="Job already completed or cancelled")
+        raise HTTPException(
+            status_code=409, detail="Job already completed or cancelled"
+        )
 
     redis = await get_redis()
     await redis.publish(f"job:{job_id}:events", json.dumps({"event": "cancelled"}))

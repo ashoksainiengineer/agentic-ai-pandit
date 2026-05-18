@@ -55,7 +55,8 @@ async def get_candidate_ephemeris(
         snapshot = await registry.call("get_planetary_snapshot", timestamp=ts)
         snap_data = snapshot.model_dump() if hasattr(snapshot, "model_dump") else {}
         sign_nakshatra = await registry.call(
-            "get_sign_and_nakshatra", longitude=snap_data.get("ascendant_longitude", 0.0)
+            "get_sign_and_nakshatra",
+            longitude=snap_data.get("ascendant_longitude", 0.0),
         )
         panchanga = await registry.call("get_panchanga", timestamp=ts)
     except Exception as exc:
@@ -67,6 +68,8 @@ async def get_candidate_ephemeris(
     return EphemerisResponse(
         candidate_id=f"{session_id}:{time}",
         snapshot=snap_data,
-        sign_nakshatra=sign_nakshatra.model_dump() if hasattr(sign_nakshatra, "model_dump") else None,
+        sign_nakshatra=sign_nakshatra.model_dump()
+        if hasattr(sign_nakshatra, "model_dump")
+        else None,
         panchanga=panchanga.model_dump() if hasattr(panchanga, "model_dump") else None,
     )

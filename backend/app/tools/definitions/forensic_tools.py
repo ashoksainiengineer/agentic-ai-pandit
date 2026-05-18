@@ -57,9 +57,24 @@ def _calculate_d9_sign(longitude: float) -> str:
 
 
 GANDANTA_POINTS: list[dict[str, Any]] = [
-    {"longitude": 0.0, "from_sign": "Pisces", "to_sign": "Aries", "type": "Moksha Gandanta"},
-    {"longitude": 120.0, "from_sign": "Cancer", "to_sign": "Leo", "type": "Rajas Gandanta"},
-    {"longitude": 240.0, "from_sign": "Scorpio", "to_sign": "Sagittarius", "type": "Tamas Gandanta"},
+    {
+        "longitude": 0.0,
+        "from_sign": "Pisces",
+        "to_sign": "Aries",
+        "type": "Moksha Gandanta",
+    },
+    {
+        "longitude": 120.0,
+        "from_sign": "Cancer",
+        "to_sign": "Leo",
+        "type": "Rajas Gandanta",
+    },
+    {
+        "longitude": 240.0,
+        "from_sign": "Scorpio",
+        "to_sign": "Sagittarius",
+        "type": "Tamas Gandanta",
+    },
 ]
 
 
@@ -96,9 +111,7 @@ def _gandanta_severity(distance: float) -> str:
 
 
 def _detect_gandanta(chart: EphemerisServiceChartResponse) -> GandantaOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     planet_positions = _build_planet_positions(chart)
     moon_lon = planet_positions.get("moon", 0.0)
 
@@ -122,7 +135,11 @@ def _detect_gandanta(chart: EphemerisServiceChartResponse) -> GandantaOutput:
     min_lagna_dist = float("inf")
     for point in GANDANTA_POINTS:
         lon = point["longitude"]
-        ld = min(abs(asc_sidereal - lon), abs(asc_sidereal - (lon + 360)), abs(asc_sidereal - (lon - 360)))
+        ld = min(
+            abs(asc_sidereal - lon),
+            abs(asc_sidereal - (lon + 360)),
+            abs(asc_sidereal - (lon - 360)),
+        )
         if ld < min_lagna_dist:
             min_lagna_dist = ld
             matched_type = point["type"]
@@ -130,7 +147,11 @@ def _detect_gandanta(chart: EphemerisServiceChartResponse) -> GandantaOutput:
     min_moon_dist = float("inf")
     for point in GANDANTA_POINTS:
         lon = point["longitude"]
-        md = min(abs(moon_lon - lon), abs(moon_lon - (lon + 360)), abs(moon_lon - (lon - 360)))
+        md = min(
+            abs(moon_lon - lon),
+            abs(moon_lon - (lon + 360)),
+            abs(moon_lon - (lon - 360)),
+        )
         if md < min_moon_dist:
             min_moon_dist = md
 
@@ -248,40 +269,160 @@ GANDANTA_SPEC = ToolSpec(
 
 NADI_DEITIES: list[str] = [
     # 1-30: Primary Deities
-    "Agni", "Brahma", "Vishnu", "Shiva", "Indra",
-    "Soma", "Surya", "Yama", "Varuna", "Vayu",
-    "Kubera", "Saraswati", "Lakshmi", "Parvati", "Ganesha",
-    "Kartikeya", "Hanuman", "Durga", "Kali", "Chandra",
-    "Mangala", "Budha", "Guru", "Shukra", "Shani",
-    "Rahu", "Ketu", "Ashwini", "Bharani", "Krittika",
+    "Agni",
+    "Brahma",
+    "Vishnu",
+    "Shiva",
+    "Indra",
+    "Soma",
+    "Surya",
+    "Yama",
+    "Varuna",
+    "Vayu",
+    "Kubera",
+    "Saraswati",
+    "Lakshmi",
+    "Parvati",
+    "Ganesha",
+    "Kartikeya",
+    "Hanuman",
+    "Durga",
+    "Kali",
+    "Chandra",
+    "Mangala",
+    "Budha",
+    "Guru",
+    "Shukra",
+    "Shani",
+    "Rahu",
+    "Ketu",
+    "Ashwini",
+    "Bharani",
+    "Krittika",
     # 31-60: Rishis
-    "Vashishtha", "Vishwamitra", "Bhrigu", "Angiras", "Atri",
-    "Pulastya", "Pulaha", "Kratu", "Marichi", "Narada",
-    "Daksha", "Kashyapa", "Shukracharya", "Brihaspati", "Shanideva",
-    "Yamaraja", "Varunadeva", "Vayudeva", "Agnideva", "Indradeva",
-    "Kuberadeva", "Chandradeva", "Suryadeva", "Ashwinikumarau", "Dhanvantari",
-    "Garuda", "Shesha", "Vasuki", "Takshaka", "Ananta",
+    "Vashishtha",
+    "Vishwamitra",
+    "Bhrigu",
+    "Angiras",
+    "Atri",
+    "Pulastya",
+    "Pulaha",
+    "Kratu",
+    "Marichi",
+    "Narada",
+    "Daksha",
+    "Kashyapa",
+    "Shukracharya",
+    "Brihaspati",
+    "Shanideva",
+    "Yamaraja",
+    "Varunadeva",
+    "Vayudeva",
+    "Agnideva",
+    "Indradeva",
+    "Kuberadeva",
+    "Chandradeva",
+    "Suryadeva",
+    "Ashwinikumarau",
+    "Dhanvantari",
+    "Garuda",
+    "Shesha",
+    "Vasuki",
+    "Takshaka",
+    "Ananta",
     # 61-90: Shakti Forms
-    "Gauri", "Uma", "Ambika", "Chandi", "Chamunda",
-    "Bhadrakali", "Mahakali", "Mahalakshmi", "Mahasaraswati", "Annapurna",
-    "Lalita", "Tripura", "Bhuvaneshwari", "Matangi", "Kamala",
-    "Tara", "Shodashi", "Bhairavi", "Chinnamasta", "Dhumavati",
-    "Bagalamukhi", "Kamakhya", "Narmada", "Godavari", "Kaveri",
-    "Yamuna", "Ganga", "Saraswati", "Sindhu", "Brahmaputra",
+    "Gauri",
+    "Uma",
+    "Ambika",
+    "Chandi",
+    "Chamunda",
+    "Bhadrakali",
+    "Mahakali",
+    "Mahalakshmi",
+    "Mahasaraswati",
+    "Annapurna",
+    "Lalita",
+    "Tripura",
+    "Bhuvaneshwari",
+    "Matangi",
+    "Kamala",
+    "Tara",
+    "Shodashi",
+    "Bhairavi",
+    "Chinnamasta",
+    "Dhumavati",
+    "Bagalamukhi",
+    "Kamakhya",
+    "Narmada",
+    "Godavari",
+    "Kaveri",
+    "Yamuna",
+    "Ganga",
+    "Saraswati",
+    "Sindhu",
+    "Brahmaputra",
     # 91-120: Celestial Beings
-    "Deva", "Asura", "Gandharva", "Kinnara", "Yaksha",
-    "Rakshasa", "Pishacha", "Pretaraja", "Nagadeva", "Garudadeva",
-    "Vidyadhara", "Siddha", "Charana", "Apsara", "Urvashi",
-    "Rambha", "Menaka", "Tilottama", "Ghritachi", "Vishwachi",
-    "Purvachitti", "Swayamprabha", "Hemavati", "Chitralekha", "Ratnavali",
-    "Madhura", "Vasanta", "Grishma", "Varsha", "Sharada",
+    "Deva",
+    "Asura",
+    "Gandharva",
+    "Kinnara",
+    "Yaksha",
+    "Rakshasa",
+    "Pishacha",
+    "Pretaraja",
+    "Nagadeva",
+    "Garudadeva",
+    "Vidyadhara",
+    "Siddha",
+    "Charana",
+    "Apsara",
+    "Urvashi",
+    "Rambha",
+    "Menaka",
+    "Tilottama",
+    "Ghritachi",
+    "Vishwachi",
+    "Purvachitti",
+    "Swayamprabha",
+    "Hemavati",
+    "Chitralekha",
+    "Ratnavali",
+    "Madhura",
+    "Vasanta",
+    "Grishma",
+    "Varsha",
+    "Sharada",
     # 121-150: Cosmic Guardians
-    "Lokapala", "Dikpala", "Kshetrapala", "Gramadevata", "Kuladevata",
-    "Ishtadevata", "Pitrideva", "Matrideva", "Gurudeva", "Shikshaka",
-    "Rakshaka", "Palaka", "Srishtikarta", "Samharaka", "Anugrahaka",
-    "Nigrahaka", "Prakasha", "Vimarsha", "Ananda", "Jnana",
-    "Bala", "Virya", "Teja", "Kshama", "Daya",
-    "Maitri", "Karuna", "Mudita", "Upeksha", "Shanti",
+    "Lokapala",
+    "Dikpala",
+    "Kshetrapala",
+    "Gramadevata",
+    "Kuladevata",
+    "Ishtadevata",
+    "Pitrideva",
+    "Matrideva",
+    "Gurudeva",
+    "Shikshaka",
+    "Rakshaka",
+    "Palaka",
+    "Srishtikarta",
+    "Samharaka",
+    "Anugrahaka",
+    "Nigrahaka",
+    "Prakasha",
+    "Vimarsha",
+    "Ananda",
+    "Jnana",
+    "Bala",
+    "Virya",
+    "Teja",
+    "Kshama",
+    "Daya",
+    "Maitri",
+    "Karuna",
+    "Mudita",
+    "Upeksha",
+    "Shanti",
 ]
 
 NADI_PHALAS: list[str] = [
@@ -384,9 +525,7 @@ class NadiAmshaOutput(BaseModel):
 
 
 def _calculate_nadi_amsha(chart: EphemerisServiceChartResponse) -> NadiAmshaOutput:
-    asc_sidereal = _sidereal_longitude(
-        chart.houses.ascendant_tropical, chart.ayanamsha
-    )
+    asc_sidereal = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
     asc_sign = _get_sign(asc_sidereal)
     planet_positions = _build_planet_positions(chart)
 
@@ -460,6 +599,7 @@ NADI_AMSHA_D150_SPEC = ToolSpec(
 
 class SpousePositionInput(BaseModel):
     """Pre-calculated spouse chart positions (alternative to fetching)."""
+
     lagna_longitude: float | None = None
     moon_longitude: float | None = None
     venus_longitude: float | None = None
@@ -474,7 +614,9 @@ class SpouseD9VerificationInput(BaseModel):
     house_system: str = "placidus"
     # Spouse data: either pre-calculated positions OR timestamp+location
     spouse_positions: SpousePositionInput | None = None
-    spouse_timestamp_utc: str | None = Field(default=None, description="Spouse birth time ISO 8601 UTC")
+    spouse_timestamp_utc: str | None = Field(
+        default=None, description="Spouse birth time ISO 8601 UTC"
+    )
     spouse_latitude: float | None = Field(default=None, ge=-90, le=90)
     spouse_longitude: float | None = Field(default=None, ge=-180, le=180)
 
@@ -553,9 +695,7 @@ async def _get_spouse_positions(
         )
         chart = await client.fetch_chart(request)
         positions: dict[str, float] = {}
-        asc = _sidereal_longitude(
-            chart.houses.ascendant_tropical, chart.ayanamsha
-        )
+        asc = _sidereal_longitude(chart.houses.ascendant_tropical, chart.ayanamsha)
         positions["lagna"] = asc
         for p in chart.planets:
             positions[p.body] = _sidereal_longitude(
@@ -623,7 +763,9 @@ def _run_d9_verification(
             score = 0.0
             interp = f"Mismatch: {native_s} vs {spouse_s} — tension possible"
             if _opposite_sign(native_s, spouse_s):
-                critical_mismatches.append(f"{name}: opposite signs ({native_s} vs {spouse_s})")
+                critical_mismatches.append(
+                    f"{name}: opposite signs ({native_s} vs {spouse_s})"
+                )
 
         total_score += score * weight
         checks.append(
@@ -710,10 +852,14 @@ def _run_d9_verification(
 
     if percentage >= 80:
         confidence = "very_high"
-        result_text = "Excellent compatibility — birth times strongly corroborate each other."
+        result_text = (
+            "Excellent compatibility — birth times strongly corroborate each other."
+        )
     elif percentage >= 60:
         confidence = "high"
-        result_text = "Good compatibility — birth times are likely accurate and well-matched."
+        result_text = (
+            "Good compatibility — birth times are likely accurate and well-matched."
+        )
     elif percentage >= 40:
         confidence = "moderate"
         result_text = "Moderate compatibility — some discrepancy may warrant review."

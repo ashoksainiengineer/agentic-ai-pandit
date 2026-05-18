@@ -54,10 +54,7 @@ def get_prompt(name: str, **variables: Any) -> str:
     """
     filename = _PROMPT_FILES.get(name)
     if filename is None:
-        raise ValueError(
-            f"Unknown prompt '{name}'. "
-            f"Available: {list(_PROMPT_FILES)}"
-        )
+        raise ValueError(f"Unknown prompt '{name}'. Available: {list(_PROMPT_FILES)}")
     env = _get_env()
     try:
         template = env.get_template(filename)

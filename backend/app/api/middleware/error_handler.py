@@ -17,7 +17,6 @@ from app.agents.base import (
     LLMProviderError,
     LLMProviderRateLimitError,
     LLMProviderTimeoutError,
-    LLMTierExhaustedError,
 )
 from app.tools.base import (
     ToolCircuitOpenError,
@@ -78,11 +77,6 @@ async def exception_handler(request: Request, exc: Exception) -> JSONResponse:
     elif isinstance(exc, LLMProviderTimeoutError):
         status_code = 504
         code = "llm_timeout"
-        detail = str(exc)
-
-    elif isinstance(exc, LLMTierExhaustedError):
-        status_code = 503
-        code = "llm_tier_exhausted"
         detail = str(exc)
 
     elif isinstance(exc, LLMProviderError):

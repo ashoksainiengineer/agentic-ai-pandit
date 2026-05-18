@@ -64,7 +64,11 @@ def _critic_router(state: BTRState) -> str:
     critic_iterations = state.get("critic_iterations", 0)
     critic_verdict = state.get("critic_verdict")
 
-    if critic_verdict and not critic_verdict.approved and critic_iterations < MAX_CRITIC_ITERATIONS:
+    if (
+        critic_verdict
+        and not critic_verdict.approved
+        and critic_iterations < MAX_CRITIC_ITERATIONS
+    ):
         re_evaluate = critic_verdict.re_evaluate_stage
         if re_evaluate in {_STAGE_LAGNA, _STAGE_DASHA, _STAGE_VARGA, _STAGE_FORENSIC}:
             log.info("critic_reroute", stage=re_evaluate, iteration=critic_iterations)

@@ -38,13 +38,45 @@ DASHA_YEARS: dict[str, float] = {
 TOTAL_DASHA_YEARS: float = 120.0
 
 NAKSHATRA_LORDS: list[str] = [
-    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury",
-    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury",
-    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury",
+    "Ketu",
+    "Venus",
+    "Sun",
+    "Moon",
+    "Mars",
+    "Rahu",
+    "Jupiter",
+    "Saturn",
+    "Mercury",
+    "Ketu",
+    "Venus",
+    "Sun",
+    "Moon",
+    "Mars",
+    "Rahu",
+    "Jupiter",
+    "Saturn",
+    "Mercury",
+    "Ketu",
+    "Venus",
+    "Sun",
+    "Moon",
+    "Mars",
+    "Rahu",
+    "Jupiter",
+    "Saturn",
+    "Mercury",
 ]
 
 DASHA_SEQUENCE: list[str] = [
-    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury",
+    "Ketu",
+    "Venus",
+    "Sun",
+    "Moon",
+    "Mars",
+    "Rahu",
+    "Jupiter",
+    "Saturn",
+    "Mercury",
 ]
 
 NAKSHATRA_SPAN = 360.0 / 27.0
@@ -64,36 +96,101 @@ YOGINI_SEQUENCE: list[dict[str, Any]] = [
 ]
 
 NAKSHATRA_TO_YOGINI: dict[int, int] = {
-    0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7,
-    8: 0, 9: 1, 10: 2, 11: 3, 12: 4, 13: 5, 14: 6, 15: 7,
-    16: 0, 17: 1, 18: 2, 19: 3, 20: 4, 21: 5, 22: 6, 23: 7,
-    24: 0, 25: 1, 26: 2,
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 0,
+    9: 1,
+    10: 2,
+    11: 3,
+    12: 4,
+    13: 5,
+    14: 6,
+    15: 7,
+    16: 0,
+    17: 1,
+    18: 2,
+    19: 3,
+    20: 4,
+    21: 5,
+    22: 6,
+    23: 7,
+    24: 0,
+    25: 1,
+    26: 2,
 }
 
 # ── Kalachakra Dasha constants ───────────────────────────
 
 ZODIAC_SIGNS_KC: list[str] = [
-    "Aries", "Taurus", "Gemini", "Cancer",
-    "Leo", "Virgo", "Libra", "Scorpio",
-    "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+    "Aries",
+    "Taurus",
+    "Gemini",
+    "Cancer",
+    "Leo",
+    "Virgo",
+    "Libra",
+    "Scorpio",
+    "Sagittarius",
+    "Capricorn",
+    "Aquarius",
+    "Pisces",
 ]
 
 SIGN_LORDS_KC: dict[str, str] = {
-    "Aries": "Mars", "Taurus": "Venus", "Gemini": "Mercury",
-    "Cancer": "Moon", "Leo": "Sun", "Virgo": "Mercury",
-    "Libra": "Venus", "Scorpio": "Mars", "Sagittarius": "Jupiter",
-    "Capricorn": "Saturn", "Aquarius": "Saturn", "Pisces": "Jupiter",
+    "Aries": "Mars",
+    "Taurus": "Venus",
+    "Gemini": "Mercury",
+    "Cancer": "Moon",
+    "Leo": "Sun",
+    "Virgo": "Mercury",
+    "Libra": "Venus",
+    "Scorpio": "Mars",
+    "Sagittarius": "Jupiter",
+    "Capricorn": "Saturn",
+    "Aquarius": "Saturn",
+    "Pisces": "Jupiter",
 }
 
 KALACHAKRA_GROUPS: list[dict[str, Any]] = [
     {"name": "Ashvini", "nakshatras": [0, 9, 18], "type": "Savya", "startSignIdx": 0},
-    {"name": "Bharani", "nakshatras": [1, 10, 19], "type": "Apisavya", "startSignIdx": 11},
+    {
+        "name": "Bharani",
+        "nakshatras": [1, 10, 19],
+        "type": "Apisavya",
+        "startSignIdx": 11,
+    },
     {"name": "Krittika", "nakshatras": [2, 11, 20], "type": "Savya", "startSignIdx": 3},
-    {"name": "Rohini", "nakshatras": [3, 12, 21], "type": "Apisavya", "startSignIdx": 8},
-    {"name": "Mrigashira", "nakshatras": [4, 13, 22], "type": "Savya", "startSignIdx": 1},
+    {
+        "name": "Rohini",
+        "nakshatras": [3, 12, 21],
+        "type": "Apisavya",
+        "startSignIdx": 8,
+    },
+    {
+        "name": "Mrigashira",
+        "nakshatras": [4, 13, 22],
+        "type": "Savya",
+        "startSignIdx": 1,
+    },
     {"name": "Ardra", "nakshatras": [5, 14, 23], "type": "Apisavya", "startSignIdx": 6},
-    {"name": "Punarvasu", "nakshatras": [6, 15, 24], "type": "Savya", "startSignIdx": 5},
-    {"name": "Pushya", "nakshatras": [7, 16, 25], "type": "Apisavya", "startSignIdx": 10},
+    {
+        "name": "Punarvasu",
+        "nakshatras": [6, 15, 24],
+        "type": "Savya",
+        "startSignIdx": 5,
+    },
+    {
+        "name": "Pushya",
+        "nakshatras": [7, 16, 25],
+        "type": "Apisavya",
+        "startSignIdx": 10,
+    },
     {"name": "Ashlesha", "nakshatras": [8, 17, 26], "type": "Mixed", "startSignIdx": 7},
 ]
 
@@ -138,6 +235,7 @@ def _snake_to_camel(s: str) -> str:
 @dataclass
 class _DashaPeriod:
     """Internal node in the recursive dasha tree."""
+
     lord: str
     start_date: datetime
     end_date: datetime
@@ -149,7 +247,12 @@ class VimshottariDashaInput(BaseModel):
     timestamp_utc: str = Field(..., description="ISO 8601 UTC timestamp (birth time)")
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
-    max_levels: int = Field(default=3, ge=2, le=5, description="Dasha depth (2=Antar, 3=Pratyantar, 4=Sukshma, 5=Prana)")
+    max_levels: int = Field(
+        default=3,
+        ge=2,
+        le=5,
+        description="Dasha depth (2=Antar, 3=Pratyantar, 4=Sukshma, 5=Prana)",
+    )
 
 
 class DashaEntryOut(BaseModel):
@@ -195,18 +298,27 @@ def _calculate_sub_dashas(
         if current_sub_start < clip_end and current_sub_end > clip_start:
             eff_start = max(current_sub_start, clip_start)
             eff_end = min(current_sub_end, clip_end)
-            duration_y = (eff_end - eff_start).total_seconds() / (DAYS_PER_YEAR * 24 * 3600)
+            duration_y = (eff_end - eff_start).total_seconds() / (
+                DAYS_PER_YEAR * 24 * 3600
+            )
 
-            sub_periods.append(_DashaPeriod(
-                lord=lord,
-                start_date=eff_start,
-                end_date=eff_end,
-                duration_years=duration_y,
-                sub_periods=_calculate_sub_dashas(
-                    lord, current_sub_start, current_sub_end,
-                    max_level, eff_start, eff_end, current_level + 1,
-                ),
-            ))
+            sub_periods.append(
+                _DashaPeriod(
+                    lord=lord,
+                    start_date=eff_start,
+                    end_date=eff_end,
+                    duration_years=duration_y,
+                    sub_periods=_calculate_sub_dashas(
+                        lord,
+                        current_sub_start,
+                        current_sub_end,
+                        max_level,
+                        eff_start,
+                        eff_end,
+                        current_level + 1,
+                    ),
+                )
+            )
 
         current_sub_start = current_sub_end
 
@@ -226,70 +338,90 @@ def _flatten_dasha(
     for period in periods:
         if level == 1:
             for sub in period.sub_periods:
-                result.extend(_flatten_dasha(
-                    [sub],
-                    maha_lord=period.lord,
-                    antar_lord=sub.lord,
-                    level=2,
-                ))
+                result.extend(
+                    _flatten_dasha(
+                        [sub],
+                        maha_lord=period.lord,
+                        antar_lord=sub.lord,
+                        level=2,
+                    )
+                )
         elif level == 2:
             if period.sub_periods:
                 for sub in period.sub_periods:
-                    result.extend(_flatten_dasha(
-                        [sub],
-                        maha_lord=maha_lord,
-                        antar_lord=period.lord,
-                        pratyantar_lord=sub.lord,
-                        level=3,
-                    ))
+                    result.extend(
+                        _flatten_dasha(
+                            [sub],
+                            maha_lord=maha_lord,
+                            antar_lord=period.lord,
+                            pratyantar_lord=sub.lord,
+                            level=3,
+                        )
+                    )
             else:
-                result.append(DashaEntryOut(
-                    maha=maha_lord or "",
-                    antar=period.lord,
-                    pratyantar="-",
-                    sukshma="-",
-                    prana="-",
-                    start_end=_format_date_range(period.start_date, period.end_date),
-                ))
+                result.append(
+                    DashaEntryOut(
+                        maha=maha_lord or "",
+                        antar=period.lord,
+                        pratyantar="-",
+                        sukshma="-",
+                        prana="-",
+                        start_end=_format_date_range(
+                            period.start_date, period.end_date
+                        ),
+                    )
+                )
         elif level == 3:
             if period.sub_periods:
                 for sub in period.sub_periods:
-                    result.extend(_flatten_dasha(
-                        [sub],
-                        maha_lord=maha_lord,
-                        antar_lord=antar_lord,
-                        pratyantar_lord=period.lord,
-                        level=4,
-                    ))
+                    result.extend(
+                        _flatten_dasha(
+                            [sub],
+                            maha_lord=maha_lord,
+                            antar_lord=antar_lord,
+                            pratyantar_lord=period.lord,
+                            level=4,
+                        )
+                    )
             else:
-                result.append(DashaEntryOut(
-                    maha=maha_lord or "",
-                    antar=antar_lord or "",
-                    pratyantar=period.lord,
-                    sukshma="-",
-                    prana="-",
-                    start_end=_format_date_range(period.start_date, period.end_date),
-                ))
+                result.append(
+                    DashaEntryOut(
+                        maha=maha_lord or "",
+                        antar=antar_lord or "",
+                        pratyantar=period.lord,
+                        sukshma="-",
+                        prana="-",
+                        start_end=_format_date_range(
+                            period.start_date, period.end_date
+                        ),
+                    )
+                )
         elif level == 4:
             if period.sub_periods:
                 for sub in period.sub_periods:
-                    result.append(DashaEntryOut(
+                    result.append(
+                        DashaEntryOut(
+                            maha=maha_lord or "",
+                            antar=antar_lord or "",
+                            pratyantar=pratyantar_lord or "",
+                            sukshma=period.lord,
+                            prana=sub.lord,
+                            start_end=_format_date_range(sub.start_date, sub.end_date),
+                        )
+                    )
+            else:
+                result.append(
+                    DashaEntryOut(
                         maha=maha_lord or "",
                         antar=antar_lord or "",
                         pratyantar=pratyantar_lord or "",
                         sukshma=period.lord,
-                        prana=sub.lord,
-                        start_end=_format_date_range(sub.start_date, sub.end_date),
-                    ))
-            else:
-                result.append(DashaEntryOut(
-                    maha=maha_lord or "",
-                    antar=antar_lord or "",
-                    pratyantar=pratyantar_lord or "",
-                    sukshma=period.lord,
-                    prana="-",
-                    start_end=_format_date_range(period.start_date, period.end_date),
-                ))
+                        prana="-",
+                        start_end=_format_date_range(
+                            period.start_date, period.end_date
+                        ),
+                    )
+                )
 
     return result
 
@@ -323,16 +455,22 @@ def _calculate_vimshottari(
     first_end = _add_years(current_date, remaining_years)
     full_end = _add_years(full_start, birth_dasha_years)
 
-    periods.append(_DashaPeriod(
-        lord=birth_lord,
-        start_date=current_date,
-        end_date=first_end,
-        duration_years=remaining_years,
-        sub_periods=_calculate_sub_dashas(
-            birth_lord, full_start, full_end,
-            max_level, current_date, first_end,
-        ),
-    ))
+    periods.append(
+        _DashaPeriod(
+            lord=birth_lord,
+            start_date=current_date,
+            end_date=first_end,
+            duration_years=remaining_years,
+            sub_periods=_calculate_sub_dashas(
+                birth_lord,
+                full_start,
+                full_end,
+                max_level,
+                current_date,
+                first_end,
+            ),
+        )
+    )
     current_date = first_end
     dasha_idx = (dasha_idx + 1) % 9
 
@@ -343,16 +481,22 @@ def _calculate_vimshottari(
             continue
         years = DASHA_YEARS[lord]
         end_date = _add_years(current_date, years)
-        periods.append(_DashaPeriod(
-            lord=lord,
-            start_date=current_date,
-            end_date=end_date,
-            duration_years=years,
-            sub_periods=_calculate_sub_dashas(
-                lord, current_date, end_date,
-                max_level, current_date, end_date,
-            ),
-        ))
+        periods.append(
+            _DashaPeriod(
+                lord=lord,
+                start_date=current_date,
+                end_date=end_date,
+                duration_years=years,
+                sub_periods=_calculate_sub_dashas(
+                    lord,
+                    current_date,
+                    end_date,
+                    max_level,
+                    current_date,
+                    end_date,
+                ),
+            )
+        )
         current_date = end_date
         dasha_idx = (dasha_idx + 1) % 9
 
@@ -381,7 +525,9 @@ async def tool_get_vimshottari_dasha(
 
     moon_lon = _get_moon_longitude_from_chart(chart)
     nak_name, birth_lord, balance, flat = _calculate_vimshottari(
-        moon_lon, birth_date, input_data.max_levels,
+        moon_lon,
+        birth_date,
+        input_data.max_levels,
     )
 
     return VimshottariDashaOutput(
@@ -410,7 +556,9 @@ class YoginiDashaInput(BaseModel):
     timestamp_utc: str = Field(..., description="ISO 8601 UTC timestamp")
     latitude: float = Field(..., ge=-90, le=90)
     longitude: float = Field(..., ge=-180, le=180)
-    num_cycles: int = Field(default=3, ge=1, le=5, description="Number of 36-year cycles")
+    num_cycles: int = Field(
+        default=3, ge=1, le=5, description="Number of 36-year cycles"
+    )
 
 
 class YoginiDashaEntryOut(BaseModel):
@@ -449,13 +597,15 @@ def _calculate_yogini_dasha(
     yogini_idx = start_yogini_idx
 
     first_end = _add_years(current_date, remaining)
-    periods.append(YoginiDashaEntryOut(
-        name=start_yogini["name"],
-        planet=start_yogini["planet"],
-        start_date=current_date.strftime("%Y-%m-%d"),
-        end_date=first_end.strftime("%Y-%m-%d"),
-        duration_years=round(remaining, 4),
-    ))
+    periods.append(
+        YoginiDashaEntryOut(
+            name=start_yogini["name"],
+            planet=start_yogini["planet"],
+            start_date=current_date.strftime("%Y-%m-%d"),
+            end_date=first_end.strftime("%Y-%m-%d"),
+            duration_years=round(remaining, 4),
+        )
+    )
     current_date = first_end
     yogini_idx = (yogini_idx + 1) % 8
 
@@ -463,13 +613,15 @@ def _calculate_yogini_dasha(
         for _i in range(8):
             yogini = YOGINI_SEQUENCE[yogini_idx]
             end_date = _add_years(current_date, yogini["years"])
-            periods.append(YoginiDashaEntryOut(
-                name=yogini["name"],
-                planet=yogini["planet"],
-                start_date=current_date.strftime("%Y-%m-%d"),
-                end_date=end_date.strftime("%Y-%m-%d"),
-                duration_years=float(yogini["years"]),
-            ))
+            periods.append(
+                YoginiDashaEntryOut(
+                    name=yogini["name"],
+                    planet=yogini["planet"],
+                    start_date=current_date.strftime("%Y-%m-%d"),
+                    end_date=end_date.strftime("%Y-%m-%d"),
+                    duration_years=float(yogini["years"]),
+                )
+            )
             current_date = end_date
             yogini_idx = (yogini_idx + 1) % 8
 
@@ -497,7 +649,9 @@ async def tool_get_yogini_dasha(
 
     moon_lon = _get_moon_longitude_from_chart(chart)
     nak_name, start_name, periods = _calculate_yogini_dasha(
-        moon_lon, birth_date, input_data.num_cycles,
+        moon_lon,
+        birth_date,
+        input_data.num_cycles,
     )
 
     return YoginiDashaOutput(
@@ -574,30 +728,36 @@ def _calculate_kalachakra_dasha(
     first_dur = durations[0]
     remaining = first_dur * (1 - pos_in_nak)
     first_end = _add_years(current_date, remaining)
-    periods.append(KalachakraDashaEntryOut(
-        sign=ZODIAC_SIGNS_KC[start_sign_idx],
-        lord=SIGN_LORDS_KC[ZODIAC_SIGNS_KC[start_sign_idx]],
-        start_date=current_date.strftime("%Y-%m-%d"),
-        end_date=first_end.strftime("%Y-%m-%d"),
-        duration_years=round(remaining, 4),
-        kalachakra_type=kc_type,
-    ))
+    periods.append(
+        KalachakraDashaEntryOut(
+            sign=ZODIAC_SIGNS_KC[start_sign_idx],
+            lord=SIGN_LORDS_KC[ZODIAC_SIGNS_KC[start_sign_idx]],
+            start_date=current_date.strftime("%Y-%m-%d"),
+            end_date=first_end.strftime("%Y-%m-%d"),
+            duration_years=round(remaining, 4),
+            kalachakra_type=kc_type,
+        )
+    )
     current_date = first_end
 
-    sign_idx = (start_sign_idx + 1) % 12 if kc_type == "Savya" else (start_sign_idx + 11) % 12
+    sign_idx = (
+        (start_sign_idx + 1) % 12 if kc_type == "Savya" else (start_sign_idx + 11) % 12
+    )
 
     for i in range(1, 12):
         dur = durations[i]
         end_date = _add_years(current_date, dur)
         sign = ZODIAC_SIGNS_KC[sign_idx]
-        periods.append(KalachakraDashaEntryOut(
-            sign=sign,
-            lord=SIGN_LORDS_KC[sign],
-            start_date=current_date.strftime("%Y-%m-%d"),
-            end_date=end_date.strftime("%Y-%m-%d"),
-            duration_years=dur,
-            kalachakra_type=kc_type,
-        ))
+        periods.append(
+            KalachakraDashaEntryOut(
+                sign=sign,
+                lord=SIGN_LORDS_KC[sign],
+                start_date=current_date.strftime("%Y-%m-%d"),
+                end_date=end_date.strftime("%Y-%m-%d"),
+                duration_years=dur,
+                kalachakra_type=kc_type,
+            )
+        )
         current_date = end_date
         sign_idx = (sign_idx + 1) % 12 if kc_type == "Savya" else (sign_idx + 11) % 12
 

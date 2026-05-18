@@ -124,7 +124,9 @@ class JobEventStore:
         append-only so Redis list indices double as sequence numbers).
         """
         log_key = f"job:{job_id}:log"
-        raw_entries = await self._redis.lrange(log_key, since_seq, since_seq + limit - 1)
+        raw_entries = await self._redis.lrange(
+            log_key, since_seq, since_seq + limit - 1
+        )
         return [json.loads(e) for e in raw_entries]
 
     async def event_count(self, job_id: str) -> int:

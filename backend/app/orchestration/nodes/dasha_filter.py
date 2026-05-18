@@ -68,7 +68,9 @@ async def _evaluate_dasha_alignment(
         )
         _dasha_result = await tool_get_vimshottari_dasha(dasha_input)
     except Exception as exc:
-        log.warning("dasha_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100])
+        log.warning(
+            "dasha_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100]
+        )
         return AgentVerdict(
             candidate_id=candidate.candidate_key or candidate.time,
             score=30.0,
@@ -97,33 +99,39 @@ async def _evaluate_dasha_alignment(
         )
 
 
-def _build_dasha_user_message(candidate: CandidateDataPackage, events: list[LifeEvent]) -> str:
+def _build_dasha_user_message(
+    candidate: CandidateDataPackage, events: list[LifeEvent]
+) -> str:
     dasha_lines = "\n".join(
-        f"  {d.maha}/{d.antar}: {d.start_end}" for d in (candidate.vimshottari_dasha or [])[:10]
+        f"  {d.maha}/{d.antar}: {d.start_end}"
+        for d in (candidate.vimshottari_dasha or [])[:10]
     )
     event_lines = "\n".join(
         f"  [{e.category.value}] {e.event_type} ({e.event_date})" for e in events[:5]
     )
     return (
-        f'{{\n'
+        f"{{\n"
         f'  "candidate_id": "{candidate.candidate_key or candidate.time}",\n'
         f'  "dasha_entries": [\n'
-        f'{dasha_lines}\n'
-        f'  ],\n'
+        f"{dasha_lines}\n"
+        f"  ],\n"
         f'  "anchor_events": [\n'
-        f'{event_lines}\n'
-        f'  ]\n'
-        f'}}'
+        f"{event_lines}\n"
+        f"  ]\n"
+        f"}}"
     )
 
 
-def _parse_agent_verdict(raw_content: str, candidate: CandidateDataPackage) -> AgentVerdict:
+def _parse_agent_verdict(
+    raw_content: str, candidate: CandidateDataPackage
+) -> AgentVerdict:
     try:
         data = json.loads(raw_content)
         return AgentVerdict.model_validate(data)
     except (json.JSONDecodeError, Exception) as exc:
         log.warning("dasha_verdict_parse_fallback", error=str(exc)[:100])
         from app.agents.structured_output import parse_agent_verdict_xml
+
         verdicts = parse_agent_verdict_xml(raw_content)
         if verdicts:
             return verdicts[0]
