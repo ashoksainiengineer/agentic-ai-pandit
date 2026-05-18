@@ -19,6 +19,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from dataclasses import dataclass
+from datetime import UTC
 from typing import Any
 
 import structlog
@@ -424,7 +425,7 @@ class JobWorker:
             tz_offset = birth_data.timezone if isinstance(birth_data.timezone, (int, float)) else 0
             tz = timezone(timedelta(hours=tz_offset))
             base_dt = datetime.strptime(base_dt_str, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=tz)
-            base_utc = base_dt.astimezone(timezone.utc)
+            base_utc = base_dt.astimezone(UTC)
         except (ValueError, TypeError) as exc:
             _log.warning("candidate_gen_time_parse_fail", error=str(exc)[:200])
             return []

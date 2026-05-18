@@ -138,5 +138,15 @@ def create_app() -> FastAPI:
     return app
 
 
-# Module-level ``app`` for ``uvicorn app.main:app``
-app: Any = create_app()
+# Lazy module-level ``app`` — created on first access so that importing
+# ``app.main`` (e.g. in tests) does **not** require env vars.
+_app: Any | None = None
+
+
+def __getattr__(name: str) -> Any:
+    if name == "app":
+        global _app
+        if _app is None:
+            _app = create_app()
+        return _app
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

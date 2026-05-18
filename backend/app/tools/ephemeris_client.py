@@ -57,6 +57,7 @@ class EphemerisServicePlanetPosition(BaseModel):
     longitude_speed: float
     latitude_speed: float | None = None
     retrograde: bool
+    magnitude: float | None = None
 
 
 class EphemerisServiceHouses(BaseModel):
