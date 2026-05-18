@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
-          uv sync --frozen --reinstall
+          uv sync --frozen --dev
 
       - name: Lint (ruff)
         run: |
