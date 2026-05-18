@@ -1,30 +1,32 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import structlog
 
 from app.agents.base import TierRouter
+from app.agents.prompt_manager import PromptManager
 from app.agents.structured_output import AgentVerdict
 from app.config import AITier
 from app.models.btr import CandidateDataPackage
 from app.models.events import LifeEvent
 from app.orchestration.state import BTRState
+from app.tools.definitions.ephemeris_tools import (
+    PlanetarySnapshotInput,
+    tool_get_planetary_snapshot,
+)
+from app.tools.definitions.varga_tools import (
+    BoundarySafetyInput,
+    tool_get_boundary_safety,
+)
 
 log = structlog.get_logger()
-
+_prompts = PromptManager()
 MIN_SCORE = 40
 
 
 async def lagna_filter_node(state: BTRState) -> dict[str, Any]:
-    """Evaluate each candidate's Lagna + Moon nakshatra against anchor events.
-
-    For every candidate in ``state["candidates"]``:
-      1. Fetch Tool 1 (planetary snapshot) — verify lagna sign & nakshatra.
-      2. Fetch Tool 8 (boundary safety) — check if candidate is near a boundary.
-      3. Ask the LLM (CHEAP tier) to score lagna–event alignment.
-      4. Prune candidates whose score < ``MIN_SCORE``.
-    """
     anchor_events: list[LifeEvent] = state.get("anchor_events", [])
     candidates: list[CandidateDataPackage] = state.get("candidates", [])
 
@@ -39,25 +41,14 @@ async def lagna_filter_node(state: BTRState) -> dict[str, Any]:
     verdicts: list[AgentVerdict] = []
 
     for candidate in candidates:
-        score = await _evaluate_candidate_lagna(candidate, anchor_events, tier_router)
-        verdict = AgentVerdict(
-            candidate_id=candidate.candidate_key or candidate.time,
-            score=score,
-            reasoning=_build_lagna_reasoning(candidate, score),
-            red_flags=[] if score >= MIN_SCORE else ["lagna_score_below_threshold"],
-            recommended_action="keep" if score >= MIN_SCORE else "eliminate",
-        )
+        verdict = await _evaluate_candidate_lagna(candidate, anchor_events, tier_router)
         verdicts.append(verdict)
-        if score >= MIN_SCORE:
+        if verdict.score >= MIN_SCORE:
             surviving.append(candidate)
         else:
             eliminated.append(candidate)
 
-    log.info(
-        "lagna_filter_complete",
-        total=len(candidates),
-        surviving=len(surviving),
-    )
+    log.info("lagna_filter_complete", total=len(candidates), surviving=len(surviving))
 
     return {
         "candidates": surviving,
@@ -72,19 +63,7 @@ async def _evaluate_candidate_lagna(
     candidate: CandidateDataPackage,
     events: list[LifeEvent],
     router: TierRouter,
-) -> float:
-    try:
-        from app.tools.definitions.ephemeris_tools import (
-            PlanetarySnapshotInput,
-            tool_get_planetary_snapshot,
-        )
-        from app.tools.definitions.varga_tools import (
-            BoundarySafetyInput,
-            tool_get_boundary_safety,
-        )
-    except ImportError:
-        return 50.0
-
+) -> AgentVerdict:
     try:
         snapshot_input = PlanetarySnapshotInput(
             timestamp_utc=candidate.time,
@@ -101,11 +80,17 @@ async def _evaluate_candidate_lagna(
         _boundary = await tool_get_boundary_safety(boundary_input)
     except Exception as exc:
         log.warning("lagna_tool_failed", candidate=candidate.candidate_key, error=str(exc)[:100])
-        return 30.0
+        return AgentVerdict(
+            candidate_id=candidate.candidate_key or candidate.time,
+            score=30.0,
+            reasoning=f"Tool call failed: {exc}",
+            red_flags=["lagna_tool_failure"],
+            recommended_action="eliminate",
+        )
 
-    system_prompt = _LAGNA_SYSTEM_PROMPT
-
+    system_prompt = _prompts.get_prompt("lagna_expert")
     user_message = _build_lagna_user_message(candidate, events)
+
     try:
         response = await router.generate(
             tier=AITier.CHEAP,
@@ -113,14 +98,35 @@ async def _evaluate_candidate_lagna(
             messages=[{"role": "user", "content": user_message}],
             structured_output_schema=AgentVerdict,
         )
-        return float(response.content) if response.content.replace(".", "", 1).isdigit() else 50.0
+        return _parse_agent_verdict(response.content, candidate)
     except Exception as exc:
         log.warning("lagna_llm_failed", error=str(exc)[:100])
-        return 30.0
+        return AgentVerdict(
+            candidate_id=candidate.candidate_key or candidate.time,
+            score=30.0,
+            reasoning=f"LLM evaluation failed: {exc}",
+            red_flags=["lagna_llm_failure"],
+            recommended_action="eliminate",
+        )
 
 
-def _build_lagna_reasoning(candidate: CandidateDataPackage, score: float) -> str:
-    return f"Lagna evaluation for {candidate.candidate_key or candidate.time}: score={score:.1f}"
+def _parse_agent_verdict(raw_content: str, candidate: CandidateDataPackage) -> AgentVerdict:
+    try:
+        data = json.loads(raw_content)
+        return AgentVerdict.model_validate(data)
+    except (json.JSONDecodeError, Exception) as exc:
+        log.warning("verdict_parse_fallback", error=str(exc)[:100], content_preview=raw_content[:200])
+        from app.agents.structured_output import parse_agent_verdict_xml
+        verdicts = parse_agent_verdict_xml(raw_content)
+        if verdicts:
+            return verdicts[0]
+        return AgentVerdict(
+            candidate_id=candidate.candidate_key or candidate.time,
+            score=50.0,
+            reasoning="Failed to parse structured output; using default score.",
+            red_flags=["parse_failure"],
+            recommended_action="re-evaluate",
+        )
 
 
 def _build_lagna_user_message(candidate: CandidateDataPackage, events: list[LifeEvent]) -> str:
@@ -129,21 +135,12 @@ def _build_lagna_user_message(candidate: CandidateDataPackage, events: list[Life
         for e in events[:5]
     )
     return (
-        f"Candidate time: {candidate.time}\n"
-        f"Ascendant: {candidate.ascendant.sign} {candidate.ascendant.degree}\n"
-        f"Moon nakshatra: {candidate.moon_nakshatra}\n\n"
-        f"Anchor events:\n{event_summaries}\n\n"
-        "Score the alignment of Lagna and Moon with each anchor event (0-100)."
+        f'{{\n'
+        f'  "candidate_id": "{candidate.candidate_key or candidate.time}",\n'
+        f'  "lagna_sign": "{candidate.ascendant.sign if candidate.ascendant else "N/A"}",\n'
+        f'  "moon_nakshatra": "{candidate.moon_nakshatra or "N/A"}",\n'
+        f'  "anchor_events": [\n'
+        f'{event_summaries}\n'
+        f'  ]\n'
+        f'}}'
     )
-
-
-_LAGNA_SYSTEM_PROMPT = """You are a Vedic Astrology Lagna Expert. Your task is to evaluate whether a candidate birth time's Lagna (rising sign) and Moon nakshatra align with the provided anchor life events.
-
-For each candidate:
-1. Check if the Lagna sign matches the expected house for the event type.
-2. Check if the Moon nakshatra lord has any significatorship for the events.
-3. Consider boundary proximity — if the Lagna or Moon is near a sign/nakshatra boundary, the score should be lower.
-4. Score 0-100, where 0 means impossible and 100 means perfect alignment.
-5. Only keep candidates with score >= 40.
-
-Output your verdict as a score with brief reasoning."""
