@@ -84,7 +84,7 @@ export default function Navbar({ transparent: _transparent = false }: NavbarProp
                   </button>
                 </Link>
                 <div className="border border-black/10 rounded-full p-0.5">
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton />
                 </div>
               </>
             ) : (
@@ -107,7 +107,7 @@ export default function Navbar({ transparent: _transparent = false }: NavbarProp
           <div className="md:hidden flex items-center gap-2">
             {isLoaded && isSignedIn && (
               <div className="border border-black/10 rounded-full p-0.5">
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
               </div>
             )}
             <button
