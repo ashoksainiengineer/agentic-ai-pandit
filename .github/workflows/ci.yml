@@ -29,11 +29,21 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install dependencies
         run: |
           cd backend
-          rm -rf .venv
-          uv sync --frozen --dev
+          uv sync --frozen --no-dev
+          uv pip install ruff mypy pytest
 
       - name: Lint (ruff)
         run: |

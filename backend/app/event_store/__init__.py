@@ -131,7 +131,8 @@ class JobEventStore:
 
     async def event_count(self, job_id: str) -> int:
         """Return the total number of stored events for *job_id*."""
-        return await self._redis.llen(f"job:{job_id}:log")
+        result = await self._redis.llen(f"job:{job_id}:log")
+        return int(result) if result is not None else 0
 
     # ------------------------------------------------------------------
     # Cleanup

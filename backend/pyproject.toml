@@ -81,6 +81,11 @@ module = ["tests.*"]
 disallow_untyped_defs = false
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["redis", "redis.*"]
+follow_imports = "skip"
+ignore_missing_imports = true
+
 [tool.mypy]
 python_version = "3.12"
 strict = true
