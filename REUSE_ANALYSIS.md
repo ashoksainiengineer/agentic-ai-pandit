@@ -15,7 +15,7 @@ Frontend (Vercel)        API (Cloud Run)         Processing (Cloud Run)
 ┌──────────────┐       ┌──────────────┐       ┌──────────────────┐
 │ Next.js 15   │──SSE──│ Express API  │─Queue─│ Job Worker       │
 │ TailwindCSS  │       │ TypeScript   │       │ 6-Stage BTR      │
-│ shadcn/ui    │       │ Drizzle ORM  │       │ DeepSeek AI      │
+│ shadcn/ui    │       │ Drizzle ORM  │       │ Vertex AI Gemini      │
 │ Clerk Auth   │       │              │       │ Skyfield Ephe.   │
 └──────────────┘       └──────┬───────┘       └──────────────────┘
                               │                        │
@@ -28,7 +28,7 @@ Frontend (Vercel)        API (Cloud Run)         Processing (Cloud Run)
 
 **Key components:**
 - **BTR Pipeline:** 6-stage tournament (not agentic) — stage1_exhaustive → stage2_batch → stage3_refinement → stage4_deep → stage5_micro → stage6_final
-- **AI:** Single model (DeepSeek Reasoner), called per-stage for batch scoring
+- **AI:** Single model (Gemini 2.5 Flash/Pro via Vertex AI), called per-stage for batch scoring
 - **Ephemeris:** Separate Python FastAPI microservice with modified Skyfield + DE440 kernel
 - **Event Store:** RedisEventStore — session events, candidate scores, thinking buffer, decision buffer (EXACTLY our blackboard pattern!)
 - **Queue:** BullMQ + Redis — async job processing, retry, dead letter queue
@@ -50,7 +50,7 @@ Frontend (Vercel)        API (Cloud Run)         Processing (Cloud Run)
 | **Deployment Pipeline** | `cloudbuild.yaml` (169 lines) | Google Cloud Build CI/CD: npm ci → build packages → test → Docker build → push to Artifact Registry → deploy to Cloud Run | Complete CI/CD pipeline. Secret management via Google Secret Manager. Multi-service deployment (API + Ephemeris). |
 | **Docker Configs** | `deploy/cloudrun/`, `Dockerfile`, `docker-compose.test.yml` | Multi-stage Docker builds for API and Ephemeris services | Reuse Docker patterns for new Python-based services. |
 | **Vercel Config** | `vercel.json` | Next.js deployment on Vercel | Reuse for frontend deployment. |
-| **Infrastructure Config** | `.env.example` (115 lines) | All env vars: Neon DB, Upstash Redis, Clerk, DeepSeek API, Ephemeris service, job queue, warmup, resource management | Complete infrastructure template. Just change AI_API_KEY to Claude/Groq. |
+| **Infrastructure Config** | `.env.example` (115 lines) | All env vars: Neon DB, Upstash Redis, Clerk, Vertex AI, Ephemeris service, job queue, warmup, resource management | Complete infrastructure template. Just change Vertex AI model/region. |
 
 ### ⚠️ REUSE WITH MODIFICATIONS
 
@@ -68,7 +68,7 @@ Frontend (Vercel)        API (Cloud Run)         Processing (Cloud Run)
 |-----------|----------|------------|----------------------|
 | **BTR Pipeline Core** | `apps/api/src/lib/seconds-precision-btr.ts` (509 lines) | 6-stage tournament algorithm. Not agentic debate. Calls AI per-stage for batch scoring, not for inter-agent debate. | LangGraph StateGraph with 5-stage agentic funnel (Lagna→Dasha→Varga→Forensic→Critic). Agents debate, not pipeline processes. |
 | **API Layer** | `apps/api/` (Express + TypeScript) | Express doesn't support LangGraph natively. Need Python for LangGraph, LangChain, Skyfield/SwissEph. | Python FastAPI + LangGraph orchestration. Keep same REST endpoints. |
-| **AI Client** | `apps/api/src/lib/ai-client.ts` | Single model (DeepSeek). No tiered routing. No debate. | Multi-provider LangChain with LLMProvider protocol. Tiered routing (Groq→Haiku→Sonnet). |
+| **AI Client** | `apps/api/src/lib/ai-client.ts` | Single model (Vertex AI Gemini). No tiered routing. No debate. | Vertex AI with Gemini 2.5 Flash/Pro. GCP native auth. Tiered routing (cheap/premium). |
 | **Prompt System** | `apps/api/src/lib/btr/prompts/` | Prompts designed for batch tournament scoring, not agentic debate. | New system prompts for 5 agent roles (Lagna/Dasha/Varga/Forensic/Critic) with debate instructions. |
 | **BTR Stages** | `apps/api/src/lib/btr/stages/` | 6 algorithmic stages. | 5 LangGraph nodes + conditional pruning edges. |
 
@@ -95,8 +95,8 @@ agentic-ai-pandit/
 │   │   │   └── critic.py
 │   │   ├── llm/                      # LLMProvider abstraction + adapters
 │   │   │   ├── protocol.py
-│   │   │   ├── groq_adapter.py
-│   │   │   └── anthropic_adapter.py
+│   │   │   └── vertex_adapter.py
+Multi-provider → Single Vertex AI provider (GCP native auth)
 │   │   ├── tools/                    # Tool registry (18 tools wrapping Ephemeris service)
 │   │   │   ├── registry.py
 │   │   │   └── ephemeris_client.py   # HTTP client → existing ephemeris service
@@ -229,7 +229,7 @@ SIGN_LORDS                   → SIGN_LORDS: dict
 - Neon PostgreSQL (same connection, different schema migrations)
 - Upstash Redis (same event store keys, same queue)
 - Google Cloud Build (same pipeline, change Dockerfile)
-- Google Secret Manager (same secrets, add Claude/Groq API keys)
+- Google Secret Manager (same secrets, add Vertex AI model config)
 - Vercel (same frontend deployment)
 - Clerk (same auth provider)
 

@@ -18,8 +18,8 @@
 │  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘          │
 ├──────────────────────────────────────────────────────────┤
 │                     LLM LAYER                             │
-│  Tier 1: Groq (Llama 3)  │  Tier 2: Claude Haiku         │
-│  Tier 3: Claude Sonnet   │  Fallback: DeepSeek           │
+│  Tier 1: Gemini 2.5 Flash (cheap) │  Tier 2: Gemini 2.5 Flash (mid) │
+│  Tier 3: Gemini 2.5 Pro (premium) │  GCP service account auth        │
 ├──────────────────────────────────────────────────────────┤
 │                  ASTROLOGY ENGINE                         │
 │  Skyfield  +  ndastro-engine (MIT)                        │
@@ -87,21 +87,18 @@ class BTRState(TypedDict):
 
 | Tier | Provider | Model | Cost/M tokens (input) | Used For | Monthly Est. |
 |------|----------|-------|----------------------|----------|-------------|
-| **Cheap** | Groq | `llama-3.2-90b` | $0.06 | Orchestrator routing, anchor extraction | ~$5 |
-| **Mid** | Anthropic | `claude-3-haiku` | $0.25 | Lagna, Dasha, Varga analysis | ~$20 |
-| **Premium** | Anthropic | `claude-3-5-sonnet` | $3.00 | Forensic D-60 precision, Critic red-team | ~$150 |
-| **Fallback** | DeepSeek | `deepseek-chat` | $0.14 | When Groq/Anthropic is down | ~$10 |
+| **Cheap** | Gemini 2.5 Flash | $0.15 input / $0.60 output | Lagna, Dasha, Varga analysis | ~$2 |
+| **Mid** | Gemini 2.5 Flash | $0.15 input / $0.60 output | Varga, forensic filter | ~$5 |
+| **Premium** | Gemini 2.5 Pro | $1.25 input / $10.00 output | Critic, forensic precision | ~$30 |
 
-**Why Groq for cheap tier:** Fastest inference (1250+ tokens/sec). Cheapest per token. Perfect for routing decisions.
-**Why Claude for analysis/precision:** Best reasoning quality for complex astrological interpretation. Less hallucination on structured data.
-**Why DeepSeek as fallback:** Cheap, good reasoning, API compatible. Prevents single-provider dependency.
+**Why Vertex AI:** Native GCP integration — automatic service account auth, no API keys to manage, $300 free credits included with Cloud Run. Gemini 2.5 Flash is fast and cheap for routing/analysis. Gemini 2.5 Pro gives best reasoning for complex astrological synthesis.
 
 ### Python SDK Setup
 
 ```bash
 uv add langchain langchain-core langgraph
-uv add langchain-groq langchain-anthropic
-uv add langchain-deepseek  # fallback
+uv add langchain-google-vertexai
+uv add google-cloud-aiplatform
 ```
 
 ---
@@ -306,7 +303,7 @@ User → Cloudflare DNS → Cloud Run (FastAPI + LangGraph)
               ┌───────────────┼───────────────┐
               ▼               ▼               ▼
          Supabase         Upstash         LLM APIs
-        (PostgreSQL)      (Redis)      (Groq/Claude)
+        (PostgreSQL)      (Redis)      (Vertex AI Gemini)
 ```
 
 **Why Cloud Run:** Scale to zero (no cost when idle). Auto-scale on traffic. No Kubernetes complexity for MVP.
@@ -342,9 +339,8 @@ dependencies = [
     "langchain-core>=0.3.0",
 
     # LLM Providers
-    "langchain-groq>=0.2.0",
-    "langchain-anthropic>=0.3.0",
-    "langchain-deepseek>=0.1.0",
+    "langchain-google-vertexai>=2.0.0",
+    "google-cloud-aiplatform>=1.70.0",
 
     # Astrology Engine
     "skyfield>=1.54",
@@ -384,7 +380,7 @@ dev = [
 | Choice | Why Not The Alternative |
 |--------|------------------------|
 | **LangGraph** not CrewAI | CrewAI hierarchical mode broken. Manager burns extra tokens. No checkpointing. |
-| **Groq** not OpenAI | 3x cheaper for routing tasks. 1250+ tokens/sec (fastest). No rate limit issues. |
+| **Vertex AI (Gemini)** not multi-provider | Native GCP auth on Cloud Run, no API keys needed, free $300 credits, simplified architecture. |
 | **Claude** not GPT-4 | Better at structured data reasoning. Less hallucination. Better at following "cite the JSON" rules. |
 | **Skyfield + ndastro-engine** not Swiss Ephemeris | Skyfield is MIT (no license fees). ndastro-engine adds Vedic layer (ayanamsa, dasha) that Skyfield lacks natively. |
 | **PostgresSaver** not MemorySaver | MemorySaver dies on restart. PostgresSaver gives crash recovery. Production non-negotiable. |

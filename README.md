@@ -46,7 +46,7 @@ User ←→ Next.js Frontend (port 3000)
 |-------|------------|-------------|
 | **Orchestration** | LangGraph (Python) | Multi-agent StateGraph with conditional routing and critic feedback loop |
 | **Backend API** | FastAPI | REST endpoints for sessions, rectification, SSE streaming, admin, health |
-| **LLM Agents** | Groq / Anthropic / DeepSeek | Tiered AI providers (cheap, mid, premium) for agent reasoning |
+| **LLM Agents** | Google Vertex AI (Gemini 2.5 Flash, Gemini 2.5 Pro) | Tiered AI providers (cheap, mid, premium) for agent reasoning |
 | **Database** | PostgreSQL (async SQLAlchemy) | Sessions, jobs, events, artifacts with Alembic migrations |
 | **Cache / Queue** | Redis | Job event store, rate limiting, SSE pub/sub |
 | **Ephemeris** | HTTP client → Skyfield service | JPL DE440 planetary data for all astrological calculations |
@@ -90,7 +90,7 @@ Each node uses an LLM agent to score and prune candidates. The critic can reject
 | Layer | Technology |
 |-------|------------|
 | **Backend** | Python 3.12+, FastAPI, LangGraph, SQLAlchemy 2.0 (async), Alembic |
-| **LLM Agents** | Groq (cheap), Anthropic Claude (mid), DeepSeek (premium fallback) |
+| **LLM Agents** | Vertex AI Gemini 2.5 Flash (cheap), Gemini 2.5 Pro (premium) |
 | **Database** | PostgreSQL 16 (async via psycopg) |
 | **Cache/Queue** | Redis 7 (event store, rate limiting, SSE pub/sub) |
 | **Auth** | Clerk (JWT verification) |

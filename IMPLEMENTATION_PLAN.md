@@ -397,10 +397,9 @@ Port from `gandanta-detection.ts`, `nadi-amsha.ts`, `pancha-pakshi.ts`, `spouse-
 - [ ] `class LLMProvider(Protocol)` with `async generate(prompt, messages, structured_output_schema) -> LLMResponse`
 - [ ] `LLMResponse` dataclass: content, tool_calls, token_usage, model, latency_ms
 
-### Step 6.2: Provider Adapters
-- [ ] `GroqAdapter` wrapping `langchain-groq`
-- [ ] `AnthropicAdapter` wrapping `langchain-anthropic`
-- [ ] `DeepSeekAdapter` (fallback)
+### Step 6.2: Provider Adapters (Vertex AI Only)
+- [ ] `VertexAIAdapter` wrapping `langchain-google-vertexai` with GCP native auth
+- No API keys needed — automatic authentication via Cloud Run service account
 
 ### Step 6.3: Tiered Router
 - [ ] `LLMRouter` class with tier mapping: orchestrator→cheap, lagna/dasha/varga→mid, forensic/critic→premium
@@ -408,9 +407,7 @@ Port from `gandanta-detection.ts`, `nadi-amsha.ts`, `pancha-pakshi.ts`, `spouse-
 - [ ] Circuit breaker per provider (5 failures → open 60s)
 
 ### Step 6.4: Structured Output Parsing
-- [ ] `with_structured_output(PydanticModel, method="json_schema")` for Claude
-- [ ] `method="function_calling"` fallback for Groq
-- [ ] XML regex parsing as last resort fallback
+- [ ] `with_structured_output(PydanticModel, method="json_schema")` via Vertex AI
 - [ ] `parse_agent_verdict(raw_text) -> AgentVerdict`
 
 ### Step 6.5: Token Tracking
@@ -418,7 +415,7 @@ Port from `gandanta-detection.ts`, `nadi-amsha.ts`, `pancha-pakshi.ts`, `spouse-
 - [ ] Budget enforcement: max 100K tokens per session
 - [ ] Prometheus metric: `btr_llm_token_usage{model, stage}`
 
-**Acceptance:** Full LLM call with Groq → Claude fallback works. Token tracking accurate.
+**Acceptance:** Full LLM call with Gemini Flash (cheap) and Gemini Pro (premium) works. Token tracking accurate.
 
 ---
 

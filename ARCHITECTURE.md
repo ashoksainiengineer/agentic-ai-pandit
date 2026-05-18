@@ -178,7 +178,7 @@ Tool returns different houses for Leo Lagna:
 ### HURDLE #2: Token Cost per LLM Call
 
 Every `get_holistic_snapshot` call returns ~2KB JSON. Each LLM analysis costs:
-- Input: ~1000 tokens (snapshot + instruction) = ~$0.002 (Groq) to ~$0.015 (Claude)
+- Input: ~1000 tokens (snapshot + instruction) = ~$0.00015 (Gemini Flash) to ~$0.0013 (Gemini Pro)
 - Output: ~300 tokens (reasoning) = ~$0.001 to ~$0.005
 
 For 2 lagnas × 3 time points × 3 anchor events = 18 LLM calls = ~$0.05 to $0.35 just for Lagna stage.
@@ -503,7 +503,7 @@ Kya hoga agar Critic flaw pakad leta hai aur Orchestrator dobara Dasha check kar
 | # | Hurdle | Impact | Mitigation |
 |---|---|---|---|
 | 1 | **Ayanamsa Discrepancy** | Lagna change at wrong second → wrong chart | Hard-set Lahiri Ayanamsa. Future: user-selectable. |
-| 2 | **Token Cost** | $0.50-$3.00 per BTR session | Anchor event strategy (3 events, not 30). Use Groq for cheap tier. |
+| 2 | **Token Cost** | $0.10-$1.00 per BTR session | Anchor event strategy (3 events, not 30). Use Gemini Flash for cheap tier. |
 | 3 | **Dasha Boundary Sensitivity** | 1 second = different dasha sequence | Confidence penalty near boundaries. Conservative pruning. |
 | 4 | **Multiple Valid Candidates** | Dono 09:40 aur 09:50 sahi lag rahe hain | Beam search — keep top-3 candidates, not top-1. Differentiate in Varga. |
 | 5 | **Varga Sensitivity** | D-60 changes every 2 min, D-10 every 3-4 min | Exact boundary detection via `find_boundary_changes` tool. |
@@ -536,7 +536,7 @@ All LLM inference runs on **Vertex AI (Gemini)**. Fallback to other providers on
 
 ~₹2.50 per BTR session. Scale to 10,000 sessions/month = ~$300 LLM spend.
 
-**Fallback providers** (only on Vertex AI outage): Groq (Llama 3), Anthropic (Claude Haiku).
+**Single provider:** Google Vertex AI with automatic GCP service account auth. No API keys needed.
 
 ---
 

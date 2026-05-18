@@ -14,7 +14,7 @@
 4. Never log secrets, tokens, birth details, or raw PII.
 5. Before submitting any code change, run the verification commands for the files you changed.
 6. All functions must have type hints. `mypy --strict` must pass with zero errors.
-7. All LLM calls must go through `LLMProvider` protocol — never import Groq/Anthropic directly in business logic.
+7. All LLM calls must go through `LLMProvider` protocol — never import Vertex AI provider directly in business logic.
 8. Never write `type: ignore` or `as any` without an explicit comment justifying why.
 
 ---
@@ -286,8 +286,8 @@ async def lagna_node(state: BTRState, llm: LLMProvider) -> dict:
     )
     return process_verdict(response)
 
-# ❌ NEVER import Groq/Anthropic directly in business logic
-from langchain_groq import ChatGroq  # ← BANNED in orchestration/tools/agents
+# ❌ NEVER import Vertex AI provider directly in business logic
+from langchain_google_vertexai import ChatVertexAI  # ← BANNED in orchestration/tools/agents
 ```
 
 ---

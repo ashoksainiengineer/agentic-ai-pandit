@@ -36,9 +36,9 @@ Everything else was correct. Python remains the language. LangGraph remains the 
 │  Circuit breakers + provider fallback + max 3 critic iterations  │
 ├──────────────────────────────────────────────────────────────────┤
 │                    LLM ABSTRACTION LAYER                          │
-│  LLMProvider protocol → GroqAdapter | AnthropicAdapter           │
-│  Tier 1: Groq (Llama 3) | Tier 2: Claude Haiku                   │
-│  Tier 3: Claude Sonnet | Fallback chain: Groq→Haiku→Sonnet      │
+│  LLMProvider protocol → VertexAIAdapter (Gemini)                 │
+│  Tier 1: Gemini 2.5 Flash | Tier 2: Gemini 2.5 Flash (mid)      │
+│  Tier 3: Gemini 2.5 Pro | GCP service account auth              │
 ├──────────────────────────────────────────────────────────────────┤
 │                 ASTROLOGY ENGINE (CORRECTED)                      │
 │  Modified Skyfield (existing ephemeris service — deployed + tested)       │
@@ -84,24 +84,16 @@ Everything else was correct. Python remains the language. LangGraph remains the 
 from typing import Protocol
 
 class LLMProvider(Protocol):
-    """Abstract LLM provider. Zero LangChain/Anthropic imports in business logic."""
+    """Abstract LLM provider. Zero provider-specific imports in business logic."""
     async def generate(self, system_prompt: str, messages: list[dict], **kwargs) -> LLMResponse:
         ...
 
-class GroqAdapter:
-    def __init__(self, model: str = "llama-3.2-90b"):
-        self._client = ChatGroq(model=model)
+class VertexAIAdapter:
+    def __init__(self, model: str = "gemini-2.5-flash-preview-04-17"):
+        self._client = ChatVertexAI(model_name=model)
 
     async def generate(self, ...) -> LLMResponse:
-        # All LangChain/Groq imports isolated here
-        ...
-
-class AnthropicAdapter:
-    def __init__(self, model: str = "claude-3-haiku-20240307"):
-        self._client = ChatAnthropic(model=model)
-
-    async def generate(self, ...) -> LLMResponse:
-        # All LangChain/Anthropic imports isolated here
+        # GCP service account auth — no API key needed
         ...
 ```
 
@@ -262,9 +254,9 @@ class LLMRouter:
     """Routes LLM calls to appropriate provider with fallback chain."""
 
     TIERS = {
-        "cheap": [GroqAdapter("llama-3.2-90b"), AnthropicAdapter("claude-3-haiku")],
-        "mid": [AnthropicAdapter("claude-3-haiku"), GroqAdapter("llama-3.2-90b")],
-        "premium": [AnthropicAdapter("claude-3-5-sonnet"), AnthropicAdapter("claude-3-opus")],
+        "cheap": [VertexAIAdapter("gemini-2.5-flash-preview-04-17")],
+        "mid": [VertexAIAdapter("gemini-2.5-flash-preview-04-17")],
+        "premium": [VertexAIAdapter("gemini-2.5-pro-preview-03-25")],
     }
 
     async def generate_with_fallback(self, tier: str, **kwargs) -> LLMResponse:
@@ -346,7 +338,7 @@ circuit_breaker_trips = Counter("circuit_breaker_trips_total", [...], ["provider
 ### Alert Rules
 - `btr_llm_cost_usd > 1.00` per session → Alert (cost anomaly)
 - `btr_confidence_score < 0.40` for 5 consecutive sessions → Alert (quality drift)
-- `circuit_breaker_trips{provider="groq"} > 5` in 5 min → Alert (provider outage)
+- `llm_quota_exceeded > 5` in 5 min → Alert (Vertex AI quota exceeded)
 - `btr_checkpoint_size_bytes > 500_000` → Warning (state bloat)
 - `btr_session_duration > 180` seconds → Warning (performance degradation)
 
@@ -367,8 +359,8 @@ dependencies = [
     "langchain-core>=0.3.0",
 
     # LLM Providers (unchanged)
-    "langchain-groq>=0.2.0",
-    "langchain-anthropic>=0.3.0",
+    "langchain-google-vertexai>=2.0.0",
+    "google-cloud-aiplatform>=1.70.0",
 
     # Astrology Engine (CORRECTED: pyswisseph replaces skyfield+ndastro)
     "pyswisseph>=2.10.0",
@@ -414,7 +406,7 @@ dev = [
 | **GCS Archive** | $0 (free 5GB) | $0.01 | $0.20 |
 | **Upstash Redis** | $0 (free 10K cmds) | $10 | $25 |
 | **Swiss Ephemeris License** | $0 (not needed) | $0 | $0 |
-| **Groq (cheap tier)** | $1 | $8 | $80 |
+| **Vertex AI Gemini (cheap tier)** | $0.50 | $4 | $40 |
 | **Claude Haiku (mid)** | $3 | $25 | $250 |
 | **Claude Sonnet (premium)** | $10 | $80 | $800 |
 | **LangSmith** | $0 (free) | $39 (team) | $99 |

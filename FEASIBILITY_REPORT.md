@@ -312,7 +312,7 @@ registry.register("get_vimshottari_dasha_sequence", vedic_engine.get_dasha_seque
 
 ```python
 # Tier 1 (cheap): Orchestrator routing decisions
-CHEAP_MODEL = "groq/llama-3.2-90b-vision-preview"  # $0.06/M input
+CHEAP_MODEL = "gemini-2.5-flash-preview-04-17"  # $0.15/M input
 
 # Tier 2 (mid): Lagna, Dasha, Varga analysis
 MID_MODEL = "claude-3-haiku-20240307"  # $0.25/M input
@@ -447,7 +447,7 @@ At 100 paying customers at $49/month = **$4,900 MRR vs $630 burn**.
 - [ ] Write system prompts for all 5 agent roles
 - [ ] Implement Brain/Worker cost tiering
 - [ ] Implement structured output parsing (XML/JSON mode)
-- [ ] Test with real LLMs (Groq first, then Claude)
+- [ ] Test with real LLMs (Vertex AI Gemini first, then local)
 - [ ] Fine-tune pruning thresholds on test dataset
 
 ### Phase 4: Critic Loop + Self-Improvement (Weeks 9-10)
@@ -470,7 +470,7 @@ At 100 paying customers at $49/month = **$4,900 MRR vs $630 burn**.
 | Risk | Severity | Mitigation |
 |------|----------|------------|
 | LLM hallucinates planetary positions | High | Prompt rule: "NEVER state a position not in the JSON." Critic re-verifies via tool calls. |
-| Token cost per session exceeds $0.50 | High | Brain/Worker tiering. Groq for cheap tier. Cache tool results. Set hard token budgets. |
+| Token cost per session exceeds $0.50 | High | Brain/Worker tiering. Gemini Flash for cheap tier. Cache tool results. Set hard token budgets. |
 | Astrology-API.io adds multi-agent BTR | Medium | Move fast. Patent workflow if possible. Build data moat (labeled BTR cases). |
 | LLM debate converges on wrong answer | Medium | DeepMind research shows debate improves even when all agents initially wrong. Critic catches obvious errors. Flag low-confidence results for human review. |
 | Dasha boundary sensitivity (1 sec = wrong dasha) | Medium | Conservative pruning near boundaries. Confidence penalty for edge times. |
