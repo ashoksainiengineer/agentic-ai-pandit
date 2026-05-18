@@ -11,7 +11,6 @@ from app.tools.definitions.varga_tools import (
     BoundaryChangesInput,
     BoundarySafetyInput,
     DivisionalChartsInput,
-    VARGA_DIVISIONS,
     _calculate_d2_sign,
     _calculate_d9_sign,
     _calculate_d150_sign,
@@ -19,8 +18,8 @@ from app.tools.definitions.varga_tools import (
     _detect_transitions,
     _generate_sweep_timestamps,
     _get_varga_sign,
-    _seconds_to_sign_boundary,
     _seconds_to_nakshatra_boundary,
+    _seconds_to_sign_boundary,
     _seconds_to_varga_boundary,
 )
 from app.tools.ephemeris_client import (
@@ -28,7 +27,6 @@ from app.tools.ephemeris_client import (
     EphemerisServiceHouses,
     EphemerisServicePlanetPosition,
 )
-
 
 # ── Test helpers: varga calculations ──
 

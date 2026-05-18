@@ -12,6 +12,7 @@ _MINIMAL_ENV: dict[str, str] = {
     "GROQ_API_KEY": "gsk_test_groq_key",
     "ANTHROPIC_API_KEY": "sk-ant-test-key",
     "DEEPSEEK_API_KEY": "sk_test_deepseek",
+    "VERTEX_API_KEY": "test_vertex_key_here",
     "ENCRYPTION_SECRET": "a" * 32,
     "GOOGLE_CLOUD_PROJECT": "test-project",
     "SENTRY_DSN": "",
