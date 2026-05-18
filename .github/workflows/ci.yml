@@ -21,6 +21,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,18 +33,20 @@ jobs:
         run: |
           cd backend
           uv sync --frozen --dev
+          echo "VIRTUAL_ENV=$PWD/.venv" >> "$GITHUB_ENV"
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Lint (ruff)
         run: |
           cd backend
-          uv run ruff check app/ tests/
+          ruff check app/ tests/
 
       - name: Type check (mypy)
         run: |
           cd backend
-          uv run mypy app/ --strict
+          mypy app/ --strict
 
       - name: Test (pytest)
         run: |
           cd backend
-          uv run pytest -x -q --no-header
+          pytest -x -q --no-header
