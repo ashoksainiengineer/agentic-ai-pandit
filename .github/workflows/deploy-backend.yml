@@ -1,0 +1,152 @@
+name: Deploy Backend to Cloud Run
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/app/**'
+      - 'backend/Dockerfile'
+      - 'backend/ephemeris/**'
+      - 'backend/pyproject.toml'
+      - 'scripts/deploy.sh'
+      - '.github/workflows/deploy-backend.yml'
+
+concurrency:
+  group: deploy-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+  CLOUD_RUN_REGION: ${{ vars.CLOUD_RUN_REGION || 'asia-southeast1' }}
+  ARTIFACT_REGISTRY_REPO: ${{ vars.ARTIFACT_REGISTRY_REPO || 'backend-images' }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'backend/app/**'
+              - 'backend/Dockerfile'
+              - 'backend/pyproject.toml'
+            ephemeris:
+              - 'backend/ephemeris/**'
+
+      - name: Resolve deploy scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "api=true" >> "$GITHUB_OUTPUT"
+            echo "ephemeris=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "api=${{ steps.changes.outputs.api }}" >> "$GITHUB_OUTPUT"
+            echo "ephemeris=${{ steps.changes.outputs.ephemeris }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate to Google Cloud (OIDC)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Setup Docker auth
+        run: |
+          gcloud auth configure-docker ${CLOUD_RUN_REGION}-docker.pkg.dev --quiet
+
+      # ── Build API image ─────────────────────────────────────
+      - name: Build API Docker image
+        if: steps.scope.outputs.api == 'true'
+        run: |
+          IMAGE_TAG="${CLOUD_RUN_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/backend-api:${{ github.sha }}"
+          LATEST_TAG="${CLOUD_RUN_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/backend-api:latest"
+          docker build -f backend/Dockerfile -t "${IMAGE_TAG}" -t "${LATEST_TAG}" backend/
+          docker push "${IMAGE_TAG}"
+          echo "IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_ENV"
+
+      - name: Deploy API to Cloud Run
+        if: steps.scope.outputs.api == 'true'
+        run: |
+          gcloud run deploy backend-api \
+            --image "${IMAGE_TAG}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --cpu 1 \
+            --concurrency 20 \
+            --min-instances 0 \
+            --max-instances 10 \
+            --timeout 3600 \
+            --set-env-vars "APP_ENV=production,APP_PORT=8000,EPHEMERIS_SERVICE_URL=${EPHEMERIS_SERVICE_URL:-http://ephemeris-service},EPHEMERIS_SERVICE_TIMEOUT_MS=15000,USE_ASYNC_JOB_PIPELINE=true,JOB_EXECUTION_MODE=inline,GOOGLE_CLOUD_PROJECT=${GCP_PROJECT_ID}" \
+            --set-secrets "NEON_DATABASE_URL=neon-database-url:latest,REDIS_URL=redis-url:latest,CLERK_SECRET_KEY=clerk-secret-key:latest,ENCRYPTION_SECRET=encryption-secret:latest"
+
+      # ── Build Ephemeris image ───────────────────────────────
+      - name: Build Ephemeris Docker image
+        if: steps.scope.outputs.ephemeris == 'true'
+        run: |
+          IMAGE_TAG="${CLOUD_RUN_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/ephemeris-service:${{ github.sha }}"
+          LATEST_TAG="${CLOUD_RUN_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${ARTIFACT_REGISTRY_REPO}/ephemeris-service:latest"
+          docker build -f backend/ephemeris/Dockerfile -t "${IMAGE_TAG}" -t "${LATEST_TAG}" backend/
+          docker push "${IMAGE_TAG}"
+          echo "EPHEMERIS_IMAGE_TAG=${IMAGE_TAG}" >> "$GITHUB_ENV"
+
+      - name: Resolve ephemeris service URL
+        if: steps.scope.outputs.ephemeris == 'true' || steps.scope.outputs.api == 'true'
+        run: |
+          EPHEMERIS_URL=$(gcloud run services describe ephemeris-service \
+            --project "${GCP_PROJECT_ID}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --format='value(status.url)' 2>/dev/null || echo "")
+          if [ -n "${EPHEMERIS_URL}" ]; then
+            echo "EPHEMERIS_SERVICE_URL=${EPHEMERIS_URL}" >> "$GITHUB_ENV"
+          fi
+
+      - name: Deploy Ephemeris to Cloud Run
+        if: steps.scope.outputs.ephemeris == 'true'
+        run: |
+          gcloud run deploy ephemeris-service \
+            --image "${EPHEMERIS_IMAGE_TAG}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --memory 1Gi \
+            --cpu 1 \
+            --concurrency 5 \
+            --min-instances 0 \
+            --max-instances 5 \
+            --no-cpu-throttling \
+            --timeout 300 \
+            --set-env-vars "APP_ENV=production"
+
+      - name: Verify API health
+        if: steps.scope.outputs.api == 'true'
+        run: |
+          API_URL=$(gcloud run services describe backend-api \
+            --project "${GCP_PROJECT_ID}" \
+            --region "${CLOUD_RUN_REGION}" \
+            --format='value(status.url)')
+          for i in $(seq 1 30); do
+            if curl -fsS "${API_URL}/health" >/dev/null 2>&1; then
+              echo "API is healthy: ${API_URL}"
+              exit 0
+            fi
+            echo "Waiting for API... (attempt ${i}/30)"
+            sleep 10
+          done
+          exit 1
