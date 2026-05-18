@@ -460,7 +460,7 @@ At 100 paying customers at $49/month = **$4,900 MRR vs $630 burn**.
 - [ ] FastAPI REST API with rate limiting
 - [ ] LangSmith tracing + cost monitoring
 - [ ] Simple React dashboard: input events → view reasoning → get time
-- [ ] MCP server for developer integration
+- [ ] API-first design with comprehensive REST endpoints
 - [ ] Stripe billing integration
 
 ---
@@ -508,4 +508,4 @@ At 100 paying customers at $49/month = **$4,900 MRR vs $630 burn**.
 2. LangGraph StateGraph with scoring-based conditional edges
 3. System prompt for the Orchestrator with the elimination order priority
 
-**Biggest risk:** Astrology-API.io adds multi-agent debate before you reach market. **Mitigation:** Launch with MCP server day one. Let developers integrate your "agentic BTR reasoning" into their existing astrology stacks. Compete on reasoning quality, not endpoint count.
+**Biggest risk:** Astrology-API.io adds multi-agent debate before you reach market. **Mitigation:** Launch with comprehensive REST API day one. Compete on reasoning quality, not endpoint count.

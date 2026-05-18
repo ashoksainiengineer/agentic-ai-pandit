@@ -22,7 +22,7 @@ Everything else was correct. Python remains the language. LangGraph remains the 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                    PRESENTATION LAYER                             │
-│  React (SaaS UI)  │  REST API (FastAPI)  │  MCP Server (isolated)│
+│  React (SaaS UI)  │  REST API (FastAPI)                   │
 ├──────────────────────────────────────────────────────────────────┤
 │                    API & QUEUE LAYER                              │
 │  FastAPI + Pydantic (API)  │  Cloud Tasks + Redis (Job Queue)    │
@@ -312,73 +312,15 @@ class CircuitBreaker:
 
 ---
 
-## 7. MCP Server — **ISOLATED + SANDBOXED (CORRECTED)**
+## 7. API Security — **INPUT SANITIZATION + RATE LIMITING**
 
-### The Risk in v1
-MCP server in the same process as the BTR engine. External LLMs can invoke any tool via prompt injection. A compromised request can trigger expensive calculations, leak birth data, or exhaust API quotas.
-
-### Corrected Architecture
-
-```python
-# MCP server — separate Cloud Run service, NOT colocated with BTR engine
-mcp = FastMCP("AI-Pandit-BTR", tool_allowlist=[
-    "rectify_birth_time",      # Full BTR
-    "get_quick_chart",         # Lightweight snapshot only
-    # Explicitly NOT exposed: get_all_vargas, get_dasha_sequence, raw tools
-])
-
-@mcp.tool()
-async def rectify_birth_time(
-    birth_date: str,        # Pydantic-validated (regex: \d{4}-\d{2}-\d{2})
-    time_window_start: str, # Validated time format
-    time_window_end: str,
-    latitude: float,        # Validated range: -90 to 90
-    longitude: float,       # Validated range: -180 to 180
-    life_events: list[dict], # Each event: {date, description, severity}
-) -> dict:
-    """
-    SANDBOXED: Validates all inputs. Rate-limited. Max 5 concurrent jobs per API key.
-    Life events sanitized before reaching LLM prompts.
-    """
-    # Validation (Pydantic)
-    validated = RectifyRequest(
-        birth_date=birth_date,
-        time_window_start=time_window_start,
-        time_window_end=time_window_end,
-        latitude=latitude,
-        longitude=longitude,
-        life_events=[
-            LifeEvent(**e) for e in life_events[:30]  # Max 30 events
-        ]
-    )
-
-    # Sanitize before LLM (prevent prompt injection)
-    sanitized_events = [
-        {
-            "date": sanitize_date(e["date"]),
-            "description": sanitize_text(e["description"], max_chars=200),
-            "severity": clamp(int(e.get("severity", 50)), 0, 100)
-        }
-        for e in validated.life_events
-    ]
-
-    # Rate limit: max 5 concurrent per API key
-    await rate_limiter.acquire(api_key, max_concurrent=5)
-
-    # Enqueue (never run synchronously in MCP context)
-    job_id = await job_queue.enqueue(sanitized_events, ...)
-    return {"job_id": job_id, "status": "queued"}
-```
-
-### Security Checklist
-- [ ] MCP server in isolated Cloud Run service (separate from BTR engine)
-- [ ] Explicit tool allowlist (not "all tools available")
+### Input Validation
 - [ ] Pydantic validation on ALL inputs with strict schemas
 - [ ] Life event text sanitized: max 200 chars, strip HTML/script tags, regex for dates
 - [ ] Rate limiting per API key: max 5 concurrent BTR jobs, max 100/day
 - [ ] Birth data encrypted at rest in Postgres (pgcrypto or application-level)
 - [ ] API key rotation support built in from day 1
-- [ ] Audit log: every tool invocation recorded with timestamp, user, inputs
+- [ ] Audit log: every API invocation recorded with timestamp, user, inputs
 
 ---
 
@@ -443,10 +385,6 @@ dependencies = [
     "google-cloud-storage>=3.0.0",   # GCS for state archival
     "redis>=5.2.0",                  # Cache + queue fallback
 
-    # MCP Server (unchanged)
-    "mcp>=1.6.0",
-    "fastmcp>=2.0.0",
-
     # Database (unchanged)
     "langgraph-checkpoint-postgres>=2.0.0",
     "psycopg[binary]>=3.2.0",
@@ -498,7 +436,7 @@ dev = [
 | Unbounded Postgres checkpoints | Capped 2 checkpoints + GCS archive | 2-5MB/checkpoint × 1000 sessions = 40GB/month. Postgres chokes. |
 | Direct LangChain imports | LLMProvider protocol + adapters | Reduces LangGraph lock-in blast radius from "rewrite" to "refactor adapters." |
 | No circuit breakers | Circuit breaker on each LLM provider | Provider 500 error should never fail a BTR session. |
-| MCP colocated with engine | Isolated MCP service + allowlist | External LLM prompt injection risk via MCP tools. |
+| No rate limiting or input sanitization | Pydantic validation + rate limiting per API key | Prevent prompt injection and resource exhaustion |
 | No custom metrics beyond LangSmith | Prometheus metrics for cost, confidence, pruning | LangSmith doesn't track state corruption, cost per session, or quality drift. |
 
 ---

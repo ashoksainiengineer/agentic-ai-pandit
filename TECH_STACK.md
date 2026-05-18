@@ -5,7 +5,7 @@
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                     PRESENTATION LAYER                    │
-│  React (SaaS UI)  │  REST API  │  MCP Server (devs)      │
+│  React (SaaS UI)  │  REST API                          │
 ├──────────────────────────────────────────────────────────┤
 │                     API LAYER                             │
 │  FastAPI + Pydantic + Uvicorn                             │
@@ -242,42 +242,6 @@ async def call_tool(tool_name: str, params: dict):
 
 ---
 
-## 7. MCP Server — Developer Integration
-
-| Stack | Version | Purpose |
-|-------|---------|---------|
-| **mcp** | 1.6+ | Model Context Protocol server |
-| **FastMCP** | 2.0+ | Simplified MCP server creation |
-
-**Why MCP server is critical:** Every major astrology API now has an MCP server (AstroVisor, VedAstro, Asterwise, Astrology-API.io). It's becoming table stakes. Developers integrate your BTR into Claude Desktop, Cursor, or their own agents via MCP.
-
-```python
-from fastmcp import FastMCP
-
-mcp = FastMCP("AI-Pandit BTR")
-
-@mcp.tool()
-async def rectify_birth_time(
-    birth_date: str,
-    time_window_start: str,
-    time_window_end: str,
-    latitude: float,
-    longitude: float,
-    life_events: list[dict]
-) -> dict:
-    """Find exact birth time using multi-agent debate on planetary data."""
-    result = await btr_graph.ainvoke(...)
-    return {
-        "rectified_time": result["final_rectified_time"],
-        "confidence": result["confidence"],
-        "reasoning": result["agent_log"]
-    }
-
-@mcp.resource("btr://tools/list")
-async def list_tools() -> str:
-    """List all 18 available astrological tools."""
-    return tool_registry.get_tool_descriptions_for_llm()
-```
 
 ---
 
@@ -298,7 +262,7 @@ async def list_tools() -> str:
 3. **Results:** Rectified time with confidence score + full reasoning transcript
 4. **History:** Past BTR sessions with scores and notes
 
-**Important:** Build API-first. The SaaS dashboard is secondary. MCP server + REST API are your primary distribution channels.
+**Important:** Build API-first. The SaaS dashboard is secondary. REST API is your primary distribution channel.
 
 ---
 
@@ -393,10 +357,6 @@ dependencies = [
     "pydantic>=2.0.0",
     "httpx>=0.28.0",
     "tenacity>=9.0.0",
-
-    # MCP Server
-    "mcp>=1.6.0",
-    "fastmcp>=2.0.0",
 
     # Database
     "langgraph-checkpoint-postgres>=2.0.0",

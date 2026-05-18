@@ -104,7 +104,6 @@ backend/
 │   │       ├── request_id.py
 │   │       └── error_handler.py
 │   │
-│   └── mcp/                  # MCP server
 │       ├── __init__.py
 │       └── server.py
 │
@@ -463,24 +462,9 @@ Port all routes from `apps/api/src/routes/`:
 **Acceptance:** All routes return correct JSON. Auth blocks unauthenticated requests. Rate limiter triggers at configured thresholds.
 
 ---
+--
 
-## Phase 8: MCP Server (Week 6, Day 5)
-
-### Step 8.1: Isolated MCP Service
-- [ ] Separate Cloud Run service (NOT colocated with API)
-- [ ] `FastMCP("AI-Pandit-BTR")` with explicit tool allowlist
-- [ ] Tools exposed: `rectify_birth_time`, `get_quick_chart` (lightweight)
-- [ ] Tools NOT exposed: raw calculation tools (internal only)
-
-### Step 8.2: MCP Security
-- [ ] Pydantic validation on ALL inputs (strict schemas, coordinate bounds, date format)
-- [ ] Life event text sanitization (max 200 chars, strip HTML, regex for dates/injection patterns)
-- [ ] Rate limiting per API key: max 5 concurrent jobs, max 100/day
-- [ ] Audit log: every tool invocation recorded
-
-**Acceptance:** MCP server works in Claude Desktop. Rate limiting blocks 6th concurrent request.
-
----
+-
 
 ## Phase 9: Event Store & Streaming (Week 7, Days 1-3)
 
@@ -656,7 +640,7 @@ Port `apps/api/src/lib/queue-manager.ts` (1206 lines):
 - [ ] API key rotation mechanism
 - [ ] PII encryption audit
 - [ ] Dependency audit (`pip-audit` in CI)
-- [ ] MCP server isolation verified
+- [ ] All services use IAM least-privilege principle
 
 ### Step 14.4: Documentation
 - [ ] API docs (auto-generated from FastAPI)

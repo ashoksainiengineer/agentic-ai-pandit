@@ -3,6 +3,38 @@
 > **⚠️ PROPRIETARY SOFTWARE — ALL RIGHTS RESERVED**
 > See [LICENSE](LICENSE) for full terms.
 
+---
+
+## System Architecture (MVP — Sufficient Stack)
+
+```
+User  →  Vercel (Next.js Frontend)
+              ↓ HTTPS / SSE
+      Google Cloud Run (FastAPI Backend)
+              ↓
+   ┌──────────┬──────────┬──────────┬──────────┐
+   │          │          │          │          │
+ Neon DB   Upstash   Vertex AI  Existing
+(Postgres)  Redis   (Gemini)   Skyfield
+ Check-   Cache +    LLM        Ephemeris
+ points   Queue    Agents       Service
+```
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | Next.js 15 (Vercel) | SaaS dashboard, rectification UI, SSE progress stream |
+| **Backend API** | FastAPI (Cloud Run) | REST endpoints, session management, job orchestration |
+| **Agent Pipeline** | LangGraph + PostgresSaver | 5-node BTR filter graph with checkpoint recovery |
+| **LLM Layer** | Vertex AI (Gemini) | Tiered: `flash-8b` (cheap), `flash` (mid), `pro` (premium) |
+| **Database** | Neon PostgreSQL | Sessions, jobs, events, LangGraph checkpoints |
+| **Cache / Queue** | Upstash Redis | Tool result cache, rate limiting, job queue, SSE pub/sub |
+| **Auth** | Clerk | JWT verification |
+| **Ephemeris** | Existing Skyfield Service | JPL DE440 planetary positions (already deployed) |
+
+**Explicitly NOT in MVP:** GCS archival, Cloud Tasks, Secret Manager, Sentry, Prometheus, Cloud Run Jobs, CI/CD pipelines. Added only when scale demands.
+
+---
+
 ## Concrete Example
 
 **User submits:**
@@ -489,18 +521,22 @@ Kya hoga agar Critic flaw pakad leta hai aur Orchestrator dobara Dasha check kar
 
 ## TOKEN COST ESTIMATE (Per BTR Session)
 
-| Stage | Tool Calls | LLM Calls | Est. Cost (Groq) | Est. Cost (Claude) |
-|---|---|---|---|---|
-| 0. Input processing | 0 | 1 (anchor extraction) | $0.001 | $0.005 |
-| 1. Lagna filter | 1 (lagna boundaries) | 2 (both lagnas) | $0.004 | $0.02 |
-| 2. Dasha filter | 1 (dasha for 3 candidates) | 1 (analysis) | $0.003 | $0.015 |
-| 3. Varga filter | 2 (varga matrix + changes) | 1 (analysis) | $0.005 | $0.025 |
-| 4. Forensic | 1 (D60 scan) | 1 (analysis) | $0.003 | $0.015 |
-| 5. Critic | 2 (verification + cross-check) | 1 (critique) | $0.004 | $0.02 |
-| 6. Final output | 0 | 1 (summary generation) | $0.002 | $0.01 |
-| **TOTAL** | **7** | **8** | **~$0.02** | **~$0.11** |
+All LLM inference runs on **Vertex AI (Gemini)**. Fallback to other providers only on outage.
 
-Groq pe: ~₹1.50 per session. Claude pe: ~₹9 per session.
+| Stage | Tool Calls | LLM Calls | Est. Cost (Vertex AI Gemini) |
+|---|---|---|---|
+| 0. Input processing | 0 | 1 (anchor extraction, `flash-8b`) | ~$0.0005 |
+| 1. Lagna filter | 1 (lagna boundaries) | 2 (both lagnas, `flash`) | ~$0.003 |
+| 2. Dasha filter | 1 (dasha for 3 candidates) | 1 (analysis, `flash`) | ~$0.002 |
+| 3. Varga filter | 2 (varga matrix + changes) | 1 (analysis, `flash`) | ~$0.004 |
+| 4. Forensic | 1 (D60 scan) | 1 (analysis, `pro`) | ~$0.008 |
+| 5. Critic | 2 (verification + cross-check) | 1 (critique, `pro`) | ~$0.01 |
+| 6. Final output | 0 | 1 (summary generation, `flash`) | ~$0.001 |
+| **TOTAL** | **7** | **8** | **~$0.03** |
+
+~₹2.50 per BTR session. Scale to 10,000 sessions/month = ~$300 LLM spend.
+
+**Fallback providers** (only on Vertex AI outage): Groq (Llama 3), Anthropic (Claude Haiku).
 
 ---
 
