@@ -1,0 +1,49 @@
+# =============================================================================
+# AI-Pandit (Agentic) — Cloud Run Job: BTR Async Worker
+# =============================================================================
+# Executes: LangGraph BTR pipeline (Lagna → Dasha → Varga → Forensic → Critic)
+# Triggered by: Cloud Tasks queue submission
+# Runs up to: 3600 seconds (1 hour)
+# Region: asia-southeast1
+# =============================================================================
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: btr-worker
+  annotations:
+    run.googleapis.com/launch-stage: BETA
+spec:
+  template:
+    metadata:
+      annotations:
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      taskCount: 1
+      template:
+        spec:
+          maxRetries: 3
+          timeoutSeconds: 3600
+          containers:
+            - image: asia-southeast1-docker.pkg.dev/agentic-ai-pandit/backend-images/btr-worker:latest
+              resources:
+                limits:
+                  memory: 1Gi
+                  cpu: "1"
+              env:
+                - name: APP_ENV
+                  value: "production"
+                - name: USE_ASYNC_JOB_PIPELINE
+                  value: "true"
+                - name: JOB_EXECUTION_MODE
+                  value: "external_worker"
+                - name: EPHEMERIS_SERVICE_URL
+                  value: "https://ephemeris-service-xxxxx-as.a.run.app"
+                - name: GOOGLE_CLOUD_PROJECT
+                  value: "agentic-ai-pandit"
+                - name: GOOGLE_CLOUD_TASKS_QUEUE
+                  value: "btr-jobs"
+                - name: GOOGLE_CLOUD_STORAGE_BUCKET
+                  value: "agentic-ai-pandit-btr-archive"
+              envFrom:
+                - secretRef:
+                    name: backend-secrets

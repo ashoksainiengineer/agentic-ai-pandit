@@ -1,0 +1,65 @@
+# =============================================================================
+# AI-Pandit (Agentic) — Cloud Run Service: Backend API
+# =============================================================================
+# Serves: FastAPI REST endpoints + SSE streaming
+# Region: asia-southeast1
+# =============================================================================
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: backend-api
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/ingress-status: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+        run.googleapis.com/cpu-throttling: "true"
+        run.googleapis.com/startup-cpu-boost: "true"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 20
+      timeoutSeconds: 3600
+      containers:
+        - image: asia-southeast1-docker.pkg.dev/agentic-ai-pandit/backend-images/backend-api:latest
+          ports:
+            - containerPort: 8000
+              name: http1
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+          env:
+            - name: APP_ENV
+              value: "production"
+            - name: APP_PORT
+              value: "8000"
+            - name: EPHEMERIS_SERVICE_URL
+              value: "https://ephemeris-service-xxxxx-as.a.run.app"
+            - name: EPHEMERIS_SERVICE_TIMEOUT_MS
+              value: "15000"
+            - name: USE_ASYNC_JOB_PIPELINE
+              value: "true"
+            - name: JOB_EXECUTION_MODE
+              value: "inline"
+          envFrom:
+            - secretRef:
+                name: backend-secrets
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3

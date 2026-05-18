@@ -1,0 +1,48 @@
+# =============================================================================
+# AI-Pandit (Agentic) — gcloudignore
+# =============================================================================
+# Files NOT uploaded to Cloud Build / Cloud Run
+# =============================================================================
+
+.gcloudignore
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Node
+node_modules/
+.next/
+.turbo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs / Plans (not needed in runtime image)
+*.md
+docs/
+.sisyphus/

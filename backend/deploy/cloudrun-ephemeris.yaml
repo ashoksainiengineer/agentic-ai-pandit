@@ -1,0 +1,53 @@
+# =============================================================================
+# AI-Pandit (Agentic) — Cloud Run Service: Ephemeris (Skyfield)
+# =============================================================================
+# Serves: JPL DE440 planetary positions, ayanamsa, house cusps
+# Internal service — not exposed publicly
+# Region: asia-southeast1
+# =============================================================================
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: ephemeris-service
+  annotations:
+    run.googleapis.com/ingress: internal
+    run.googleapis.com/ingress-status: internal
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "5"
+        run.googleapis.com/cpu-throttling: "false"  # Skyfield needs full CPU for calculations
+        run.googleapis.com/startup-cpu-boost: "true"
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      containerConcurrency: 5
+      timeoutSeconds: 300
+      containers:
+        - image: asia-southeast1-docker.pkg.dev/agentic-ai-pandit/backend-images/ephemeris-service:latest
+          ports:
+            - containerPort: 8001
+              name: http1
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: "1"
+          env:
+            - name: APP_ENV
+              value: "production"
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 30  # Skyfield kernel loading is slow
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
