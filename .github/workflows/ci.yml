@@ -32,21 +32,20 @@ jobs:
       - name: Install dependencies
         run: |
           cd backend
+          rm -rf .venv
           uv sync --frozen --dev
-          echo "VIRTUAL_ENV=$PWD/.venv" >> "$GITHUB_ENV"
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
       - name: Lint (ruff)
         run: |
           cd backend
-          ruff check app/ tests/
+          uv run ruff check app/ tests/
 
       - name: Type check (mypy)
         run: |
           cd backend
-          mypy app/ --strict
+          uv run mypy app/ --strict
 
       - name: Test (pytest)
         run: |
           cd backend
-          pytest -x -q --no-header
+          uv run pytest -x -q --no-header
