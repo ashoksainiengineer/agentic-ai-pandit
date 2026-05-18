@@ -395,7 +395,7 @@ These files affect the core BTR correctness. Prefer test-first edits and avoid b
 
 ## Deployment Safety
 
-- Cloud Run deploy via `gcloud builds submit --config cloudbuild.yaml`
+- Cloud Run deploy via `gcloud builds submit --config cloudbuild.yaml --project=agentic-ai-pandit`
 - Never change scaling defaults without discussion:
   - `min-instances=1` for API (prevents cold starts during processing)
   - `min-instances=0` for ephemeris (cost optimization when idle)

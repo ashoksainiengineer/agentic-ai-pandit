@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import StrEnum
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -60,14 +60,18 @@ class Settings(BaseSettings):
     deepseek_api_key: str = Field(default="", min_length=1)
     deepseek_model: str = "deepseek-reasoner"
 
+    vertex_api_key: str = Field(default="", min_length=1)
+    vertex_flash_model: str = "gemini-1.5-flash"
+    vertex_pro_model: str = "gemini-1.5-pro"
+
     encryption_secret: str = Field(default="", min_length=32)
 
-    ephemeris_service_url: str = "http://localhost:8000"
+    ephemeris_service_url: str = "http://localhost:8001"
     ephemeris_service_timeout_ms: int = 15000
     ephemeris_batch_size: int = 250
     ephemeris_house_system: HouseSystem = HouseSystem.WHOLE_SIGN
 
-    google_cloud_project: str = Field(default="")
+    google_cloud_project: str = Field(default="agentic-ai-pandit")
     google_cloud_tasks_queue: str = "btr-jobs"
     google_cloud_storage_bucket: str = "ai-pandit-btr-archive"
 

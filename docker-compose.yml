@@ -10,12 +10,28 @@ x-app-vars: &app-vars
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
   DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
   ENCRYPTION_SECRET: ${ENCRYPTION_SECRET:-development_secret_key_32chars!!}
-  GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-local}
+   GOOGLE_CLOUD_PROJECT: ${GOOGLE_CLOUD_PROJECT:-agentic-ai-pandit}
   SENTRY_DSN: ${SENTRY_DSN:-}
   OTEL_ENABLED: "false"
+  EPHEMERIS_SERVICE_URL: http://ephemeris:8001
   ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
 
 services:
+  ephemeris:
+    build:
+      context: ./backend
+      dockerfile: ephemeris/Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - skyfield_data:/root/.skyfield
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
   db:
     image: postgres:16-alpine
     environment:
@@ -55,6 +71,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      ephemeris:
+        condition: service_healthy
 
   web:
     build:
@@ -84,3 +102,4 @@ services:
 
 volumes:
   pgdata:
+  skyfield_data:
