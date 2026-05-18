@@ -273,6 +273,61 @@ class DeepSeekAdapter:
             _raise_provider_error(exc, t0)
 
 
+class VertexAIAdapter:
+    def __init__(self, model: str | None = None) -> None:
+        settings = get_settings()
+        self.model_name = model or settings.vertex_flash_model
+
+        from langchain_openai import ChatOpenAI
+
+        self._llm: Any = ChatOpenAI(
+            model=self.model_name,
+            api_key=SecretStr(settings.vertex_api_key),
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+            temperature=0.1,
+            max_tokens=4096,
+        )
+        self._log = log.bind(provider="vertex", model=self.model_name)
+
+    async def generate(
+        self,
+        system_prompt: str,
+        messages: Sequence[dict[str, str]],
+        structured_output_schema: type[BaseModel] | None = None,
+        temperature: float = 0.1,
+        max_tokens: int = 4096,
+    ) -> LLMResponse:
+        t0 = time.monotonic()
+        try:
+            self._llm.temperature = temperature
+            self._llm.max_tokens = max_tokens
+            lc_messages = _build_lc_messages(system_prompt, messages)
+
+            if structured_output_schema is not None:
+                structured_llm = self._llm.with_structured_output(
+                    structured_output_schema, method="function_calling"
+                )
+                result = await structured_llm.ainvoke(lc_messages)
+                latency = (time.monotonic() - t0) * 1000
+                return LLMResponse(
+                    content=result.model_dump_json() if isinstance(result, BaseModel) else str(result),
+                    model=self.model_name,
+                    latency_ms=round(latency, 1),
+                )
+
+            result = await self._llm.ainvoke(lc_messages)
+            latency = (time.monotonic() - t0) * 1000
+            return LLMResponse(
+                content=_safe_content(result),
+                token_usage=_safe_token_usage(result),
+                model=self.model_name,
+                latency_ms=round(latency, 1),
+            )
+
+        except Exception as exc:
+            _raise_provider_error(exc, t0)
+
+
 def _raise_provider_error(exc: Exception, t0: float) -> NoReturn:
     latency = (time.monotonic() - t0) * 1000
     err_str = str(exc).lower()
@@ -299,19 +354,39 @@ class TierRouter:
 
     def __init__(self) -> None:
         settings = get_settings()
-        self._providers: dict[AITier, list[tuple[LLMProvider, str]]] = {
-            AITier.CHEAP: [
-                (GroqAdapter(settings.groq_model), "groq_cheap"),
-            ],
-            AITier.MID: [
-                (AnthropicAdapter(settings.anthropic_haiku_model), "anthropic_haiku"),
-                (DeepSeekAdapter(), "deepseek_fallback"),
-            ],
-            AITier.PREMIUM: [
-                (AnthropicAdapter(settings.anthropic_sonnet_model), "anthropic_sonnet"),
-                (DeepSeekAdapter(), "deepseek_fallback"),
-            ],
-        }
+        use_vertex = bool(settings.vertex_api_key)
+
+        if use_vertex:
+            self._providers: dict[AITier, list[tuple[LLMProvider, str]]] = {
+                AITier.CHEAP: [
+                    (VertexAIAdapter(settings.vertex_flash_model), "vertex_flash"),
+                    (GroqAdapter(settings.groq_model), "groq_cheap"),
+                ],
+                AITier.MID: [
+                    (VertexAIAdapter(settings.vertex_flash_model), "vertex_flash"),
+                    (AnthropicAdapter(settings.anthropic_haiku_model), "anthropic_haiku"),
+                    (DeepSeekAdapter(), "deepseek_fallback"),
+                ],
+                AITier.PREMIUM: [
+                    (VertexAIAdapter(settings.vertex_pro_model), "vertex_pro"),
+                    (AnthropicAdapter(settings.anthropic_sonnet_model), "anthropic_sonnet"),
+                    (DeepSeekAdapter(), "deepseek_fallback"),
+                ],
+            }
+        else:
+            self._providers = {
+                AITier.CHEAP: [
+                    (GroqAdapter(settings.groq_model), "groq_cheap"),
+                ],
+                AITier.MID: [
+                    (AnthropicAdapter(settings.anthropic_haiku_model), "anthropic_haiku"),
+                    (DeepSeekAdapter(), "deepseek_fallback"),
+                ],
+                AITier.PREMIUM: [
+                    (AnthropicAdapter(settings.anthropic_sonnet_model), "anthropic_sonnet"),
+                    (DeepSeekAdapter(), "deepseek_fallback"),
+                ],
+            }
         self._circuit_breakers: dict[str, _CircuitState] = {}
         self._log = log.bind(component="TierRouter")
 
